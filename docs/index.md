@@ -19,6 +19,7 @@
 
 - [本地开发](development/local-development.md)
 - [代码规范](development/code-conventions.md)
+- [Git 分支与提交策略](development/git-workflow.md)
 - [CRUD 代码生成](development/code-generation.md)
 - [架构决策记录](decisions/README.md)
 
@@ -44,4 +45,3 @@
 - 架构的“为什么”通过 ADR 或专题设计文档记录。
 - 代码正确性由项目测试保障；文档与架构声明的一致性由 Agent 结合源码、POM 和 Git Diff 动态检查。
 - 修改模块、依赖方向、领域边界、启动命令、生成流程或运行配置时，应在同一提交中更新相关文档。
-

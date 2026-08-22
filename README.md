@@ -11,7 +11,7 @@
 
 g2rain 平台会员主数据与外部身份绑定服务，维护租户内会员、稳定会员编号、会员状态及企业微信等身份关系，并为可信接入渠道提供会员解析与幂等创建能力。
 
-[官网](https://www.g2rain.com) · [完整文档](docs/index.md) · [架构说明](docs/architecture/overview.md) · [代码规范](docs/development/code-conventions.md) · [Issues](https://github.com/g2rain/g2rain/issues) · [Discussions](https://github.com/g2rain/g2rain/discussions)
+[官网](https://www.g2rain.com) · [完整文档](docs/index.md) · [架构说明](docs/architecture/overview.md) · [代码规范](docs/development/code-conventions.md) · [Git 工作流](docs/development/git-workflow.md) · [Issues](https://github.com/g2rain/g2rain/issues) · [Discussions](https://github.com/g2rain/g2rain/discussions)
 
 ## 项目定位
 
@@ -148,6 +148,7 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 | 核心运行流程 | [docs/architecture/runtime-flows.md](docs/architecture/runtime-flows.md) |
 | 本地开发 | [docs/development/local-development.md](docs/development/local-development.md) |
 | 代码规范 | [docs/development/code-conventions.md](docs/development/code-conventions.md) |
+| Git 分支与提交策略 | [docs/development/git-workflow.md](docs/development/git-workflow.md) |
 | CRUD 代码生成 | [docs/development/code-generation.md](docs/development/code-generation.md) |
 | 配置说明 | [docs/operations/configuration.md](docs/operations/configuration.md) |
 | 构建与部署 | [docs/operations/deployment.md](docs/operations/deployment.md) |
@@ -178,6 +179,18 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 欢迎通过 Issue、Discussion 和 Pull Request 参与 g2rain 建设。
 
 代码贡献前请尽量补充必要的测试和文档，并确保构建、测试与静态检查通过。提交代码时，请同步更新受影响的 `docs` 文档；新增或改变长期架构决策时，在 `docs/decisions` 中增加 ADR。
+
+分支与发布流程：
+
+```text
+feature/* 或 fix/* → develop → 测试环境验证 → main
+```
+
+- `main` 是稳定主分支，`develop` 是开发集成分支。
+- 特性使用 `feature/<name>`，缺陷修复使用 `fix/<name>`。
+- `feature/*` 和 `fix/*` 必须先合并到 `develop`；测试环境验证通过后，再由 `develop` 合并到 `main`。
+- `main` 承担正式发布和版本升级；`common`、`starter` 等提供 JAR 的项目尤其需要在发布时检查并升级版本号。
+- 完整规则见 [Git 分支与提交策略](docs/development/git-workflow.md)。
 
 ```bash
 mvn clean verify

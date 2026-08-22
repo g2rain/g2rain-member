@@ -61,6 +61,21 @@ community:
   contributionNotice: 代码贡献前请尽量补充必要的测试和文档，并确保构建、测试与静态检查通过。
   acknowledgement: 感谢所有为 g2rain 项目提交 Issue、代码、文档、建议和使用反馈的开发者们！
 
+gitWorkflow:
+  primaryBranch: main
+  developmentBranch: develop
+  featurePattern: feature/<name>
+  fixPattern: fix/<name>
+  mergeFlow:
+    - feature/* 或 fix/* 合并到 develop
+    - develop 部署到测试环境并完成验证
+    - 验证通过后将 develop 合并到 main
+  rules:
+    - feature/* 和 fix/* 不得绕过 develop 直接合并到 main
+    - main 承担正式发布和版本号升级
+    - common、starter 等提供 JAR 的项目发布时必须检查并按兼容性升级版本号
+  commitFormat: type(scope): summary
+
 architectureRules:
   - g2rain-member-api 不得依赖 g2rain-member-biz 或 g2rain-member-startup
   - g2rain-member-biz 必须依赖 g2rain-member-api 且不得依赖 g2rain-member-startup
@@ -86,8 +101,8 @@ documentation:
     - docs/architecture/runtime-flows.md
     - docs/development/local-development.md
     - docs/development/code-conventions.md
+    - docs/development/git-workflow.md
     - docs/development/code-generation.md
     - docs/operations/configuration.md
     - docs/operations/deployment.md
     - docs/operations/troubleshooting.md
-
