@@ -1,0 +1,93 @@
+schemaVersion: 1
+name: g2rain-member
+family: backend-domain-service
+role: 平台会员主数据与外部身份绑定服务
+language: Java
+buildTool: Maven
+
+ownership:
+  owns:
+    - 租户内会员主数据、状态与稳定会员编号
+    - 会员与企业微信、手机号等外部身份的绑定关系
+    - 企业微信外部联系人会员的解析与幂等创建
+    - 会员资料最小化保存、租户隔离和身份历史占位
+  excludes:
+    - 员工 Passport、平台登录、OAuth/OIDC 与 Token 签发
+    - 企业微信回调验签、解密和 sync_msg 消息拉取
+    - 网关路由、统一入口鉴权和请求转发
+    - 咨询、工单、订单和其他会员下游业务
+
+modules:
+  - name: g2rain-member-api
+    path: g2rain-member-api
+    role: 会员领域契约
+    mayDependOn: []
+  - name: g2rain-member-biz
+    path: g2rain-member-biz
+    role: 会员领域实现
+    mayDependOn:
+      - g2rain-member-api
+  - name: g2rain-member-startup
+    path: g2rain-member-startup
+    role: 运行时组装
+    mayDependOn:
+      - g2rain-member-biz
+
+runtime:
+  mainClass: com.g2rain.member.Application
+  defaultPort: 8080
+  defaultProfile: dev
+  dependencies:
+    - MySQL
+    - Redis
+    - Nacos
+
+commands:
+  verify: mvn clean verify
+  run: mvn -pl g2rain-member-startup -am spring-boot:run
+  codegen: mvn g2rain-crafter:bootstrap
+  codegenInteractive: mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
+  image: mvn -pl g2rain-member-startup -am package && mvn -pl g2rain-member-startup jib:dockerBuild
+
+community:
+  website: https://www.g2rain.com
+  issues: https://github.com/g2rain/g2rain/issues
+  discussions: https://github.com/g2rain/g2rain/discussions
+  email: g2rain_developer@163.com
+  license:
+    name: Apache License 2.0
+    file: null
+    url: https://github.com/g2rain/g2rain-member/blob/main/LICENSE
+  contributionNotice: 代码贡献前请尽量补充必要的测试和文档，并确保构建、测试与静态检查通过。
+  acknowledgement: 感谢所有为 g2rain 项目提交 Issue、代码、文档、建议和使用反馈的开发者们！
+
+architectureRules:
+  - g2rain-member-api 不得依赖 g2rain-member-biz 或 g2rain-member-startup
+  - g2rain-member-biz 必须依赖 g2rain-member-api 且不得依赖 g2rain-member-startup
+  - g2rain-member-startup 负责组装 g2rain-member-biz
+  - API 模块不得引用 controller、service、dao、config 等实现包
+  - 前端 App 通过 g2rain-iam 完成认证并取得用于 Gateway 的 Token
+  - 前端 App 和普通外部调用方必须通过 Gateway 访问 Member 的公开接口
+  - 企业微信接入模块必须先通过 IAM 验证回调并取得可信租户上下文
+  - 企业微信接入模块只能通过受信内部契约解析或创建会员
+  - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容
+  - 受信内部接口必须显式隐藏并实施访问控制，不得只依赖 URL 前缀隔离
+  - 所有会员与身份读写必须保持 organ_id 租户一致性
+
+documentation:
+  entry: docs/index.md
+  architecture: docs/architecture/overview.md
+  decisions: docs/decisions
+  required:
+    - docs/community.md
+    - docs/architecture/overview.md
+    - docs/architecture/modules.md
+    - docs/architecture/dependencies.md
+    - docs/architecture/runtime-flows.md
+    - docs/development/local-development.md
+    - docs/development/code-conventions.md
+    - docs/development/code-generation.md
+    - docs/operations/configuration.md
+    - docs/operations/deployment.md
+    - docs/operations/troubleshooting.md
+
