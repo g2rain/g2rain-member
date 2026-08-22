@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    host: localhost
+    port: 3306
+    database: g2rain_member
+    username: root
+    password: root123456
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?useUnicode=true&characterEncoding=utf-8&useSSL=true&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      validation-timeout: 3000
+      idle-timeout: 30000
+      max-lifetime: 300000
+      minimum-idle: 1
+      maximum-pool-size: 10
+      connection-test-query: select 1

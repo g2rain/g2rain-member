@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.g2rain.member.dao.MemberDao">
+    <!-- 閫氱敤缁撴灉闆嗘槧灏勶紙鍖呭惈鎵€鏈夊瓧娈碉細涓婚敭+鍩虹瀛楁+涓氬姟瀛楁锛?-->
+    <resultMap id="BaseResultMap" type="com.g2rain.member.dao.po.MemberPo">
+        <!-- 涓婚敭瀛楁 -->
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <!-- 鍩虹瀛楁锛坈reateTime銆乽pdateTime锛?-->
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <!-- 涓氬姟瀛楁锛堝叾浠栬嚜瀹氫箟瀛楁锛?-->
+        <result column="organ_id" property="organId" jdbcType="BIGINT"/>
+        <result column="member_no" property="memberNo" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <!-- deleteFlag瀛楁锛堝鏋滃瓨鍦級 -->
+        <result column="delete_flag" property="deleteFlag" jdbcType="TINYINT"/>
+        <!-- version瀛楁锛堝鏋滃瓨鍦級 -->
+        <result column="version" property="version" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 瀹氫箟鍙鐢ㄦ帓搴忔柟鍚戠墖娈?-->
+    <sql id="directionClause">
+        <choose>
+            <when test="item.direction == 'DESC'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- 鍙鐢ㄧ殑鍔ㄦ€佹帓搴?SQL 鐗囨 -->
+    <sql id="dynamicOrderBy">
+        <trim prefix="ORDER BY" suffixOverrides=",">
+            <foreach collection="safeSorts" item="item" separator=",">
+                <choose>
+                    <when test="item.column == 'id'">
+                        id
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'createTime'">
+                        create_time
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'updateTime'">
+                        update_time
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'organId'">
+                        organ_id
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'memberNo'">
+                        member_no
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'name'">
+                        name
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'avatar'">
+                        avatar
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'mobile'">
+                        mobile
+                        <include refid="directionClause"/>
+                    </when>
+                    <when test="item.column == 'status'">
+                        status
+                        <include refid="directionClause"/>
+                    </when>
+                </choose>
+            </foreach>
+        </trim>
+    </sql>
+
+    <!-- 鎻掑叆鍗曟潯璁板綍 -->
+    <insert id="insert" parameterType="com.g2rain.member.dao.po.MemberPo">
+        INSERT INTO member (
+        <!-- 涓婚敭瀛楁锛堣嚜澧炰富閿笉鍖呭惈鍦ㄦ彃鍏ヨ鍙ヤ腑锛?-->
+        id,
+        <!-- 鍩虹瀛楁 -->
+        create_time, update_time,
+        <!-- 涓氬姟瀛楁 -->
+        organ_id, member_no, name, avatar, mobile, status,
+        <!-- deleteFlag瀛楁锛堝鏋滃瓨鍦級 -->
+        delete_flag,
+        <!-- version瀛楁锛堝鏋滃瓨鍦級 -->
+        version
+        ) VALUES (
+        <!-- 涓婚敭鍊硷紙鑷涓婚敭涓嶅寘鍚級 -->
+        #{id, jdbcType=BIGINT},
+        <!-- 鍩虹瀛楁鍊?-->
+        #{createTime, jdbcType=TIMESTAMP}, #{updateTime, jdbcType=TIMESTAMP},
+        <!-- 涓氬姟瀛楁鍊?-->
+        #{organId, jdbcType=BIGINT}, #{memberNo, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{avatar, jdbcType=VARCHAR}, #{mobile, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR},
+        <!-- deleteFlag瀛楁鍊硷紙濡傛灉瀛樺湪锛岃缃粯璁ゅ€间负0锛?-->
+        0,
+        <!-- version瀛楁鍊硷紙濡傛灉瀛樺湪锛岃缃粯璁ゅ€间负0锛?-->
+        0
+        )
+    </insert>
+
+    <!-- 鎵归噺鎻掑叆璁板綍 -->
+    <insert id="insertMultiple" parameterType="java.util.List">
+        INSERT INTO member (
+        <!-- 涓婚敭瀛楁锛堣嚜澧炰富閿笉鍖呭惈锛?-->
+        id,
+        <!-- 鍩虹瀛楁 -->
+        create_time, update_time,
+        <!-- 涓氬姟瀛楁 -->
+        organ_id, member_no, name, avatar, mobile, status,
+        <!-- deleteFlag瀛楁锛堝鏋滃瓨鍦級 -->
+        delete_flag,
+        <!-- version瀛楁锛堝鏋滃瓨鍦級 -->
+        version
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            <!-- 涓婚敭鍊硷紙鑷涓婚敭涓嶅寘鍚級 -->
+            #{item.id, jdbcType=BIGINT},
+            <!-- 鍩虹瀛楁鍊?-->
+            #{item.createTime, jdbcType=TIMESTAMP}, #{item.updateTime, jdbcType=TIMESTAMP},
+            <!-- 涓氬姟瀛楁鍊?-->
+            #{item.organId, jdbcType=BIGINT}, #{item.memberNo, jdbcType=VARCHAR}, #{item.name, jdbcType=VARCHAR}, #{item.avatar, jdbcType=VARCHAR}, #{item.mobile, jdbcType=VARCHAR}, #{item.status, jdbcType=VARCHAR},
+            <!-- deleteFlag瀛楁鍊硷紙濡傛灉瀛樺湪锛岃缃粯璁ゅ€间负0锛?-->
+            0,
+            <!-- version瀛楁鍊硷紙濡傛灉瀛樺湪锛岃缃粯璁ゅ€间负0锛?-->
+            0
+            )
+        </foreach>
+    </insert>
+
+    <!-- 鏍规嵁ID鏇存柊璁板綍锛堝寘鍚熀纭€瀛楁鍜屼笟鍔″瓧娈碉級 -->
+    <update id="update" parameterType="com.g2rain.member.dao.po.MemberPo">
+        UPDATE member
+        <set>
+            <!-- 鍩虹瀛楁鏇存柊锛堟帓闄ersion锛寁ersion鍗曠嫭澶勭悊锛?-->
+            <if test="updateTime != null">
+                update_time = #{updateTime, jdbcType=TIMESTAMP},
+            </if>
+            <!-- 涓氬姟瀛楁鏇存柊 -->
+            <if test="organId != null">
+                organ_id = #{organId, jdbcType=BIGINT},
+            </if>
+            <if test="memberNo != null">
+                member_no = #{memberNo, jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                name = #{name, jdbcType=VARCHAR},
+            </if>
+            <if test="avatar != null">
+                avatar = #{avatar, jdbcType=VARCHAR},
+            </if>
+            <if test="mobile != null">
+                mobile = #{mobile, jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                status = #{status, jdbcType=VARCHAR},
+            </if>
+            <!-- version瀛楁鏇存柊锛堝鏋滃瓨鍦紝鐗堟湰鍙疯嚜澧烇級 -->
+            version = version + 1
+        </set>
+        WHERE id = #{id, jdbcType=BIGINT}
+    </update>
+
+    <!-- 鏍规嵁ID鍜孷ersion鏇存柊璁板綍锛堜箰瑙傞攣鏇存柊锛屽寘鍚熀纭€瀛楁鍜屼笟鍔″瓧娈碉級 -->
+    <update id="updateByVersion" parameterType="com.g2rain.member.dao.po.MemberPo">
+        UPDATE member
+        <set>
+            <!-- 鍩虹瀛楁鏇存柊锛堟帓闄ersion锛寁ersion鍗曠嫭澶勭悊锛?-->
+            <if test="updateTime != null">
+                update_time = #{updateTime, jdbcType=TIMESTAMP},
+            </if>
+            <!-- 涓氬姟瀛楁鏇存柊 -->
+            <if test="organId != null">
+                organ_id = #{organId, jdbcType=BIGINT},
+            </if>
+            <if test="memberNo != null">
+                member_no = #{memberNo, jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                name = #{name, jdbcType=VARCHAR},
+            </if>
+            <if test="avatar != null">
+                avatar = #{avatar, jdbcType=VARCHAR},
+            </if>
+            <if test="mobile != null">
+                mobile = #{mobile, jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                status = #{status, jdbcType=VARCHAR},
+            </if>
+            <!-- version瀛楁鏇存柊锛堜箰瑙傞攣鐗堟湰鍙疯嚜澧烇級 -->
+            version = version + 1
+        </set>
+        WHERE id = #{id, jdbcType=BIGINT}
+        AND version = #{version, jdbcType=INTEGER}
+    </update>
+
+    <!-- 鏍规嵁ID鍒犻櫎璁板綍锛堥€昏緫鍒犻櫎锛氬皢delete_flag璁剧疆涓簍rue锛?-->
+    <update id="delete" parameterType="Long">
+        UPDATE member
+        <set>
+            delete_flag = 1, version = version + 1
+        </set>
+        WHERE id = #{id, jdbcType=BIGINT}
+        <!-- 鍙垹闄ゆ湭鍒犻櫎鐨勮褰?-->
+        AND (delete_flag = 0 OR delete_flag IS NULL)
+    </update>
+
+    <!-- 鏍规嵁ID鏌ヨ璁板綍锛堟煡璇㈡墍鏈夊瓧娈碉級 -->
+    <select id="selectById" parameterType="Long" resultMap="BaseResultMap">
+        SELECT
+        <!-- 涓婚敭瀛楁 -->
+        id,
+        <!-- 鍩虹瀛楁 -->
+        create_time, update_time,
+        <!-- 涓氬姟瀛楁 -->
+        organ_id, member_no, name, avatar, mobile, status,
+        <!-- deleteFlag瀛楁锛堝鏋滃瓨鍦級 -->
+        delete_flag,
+        <!-- version瀛楁锛堝鏋滃瓨鍦級 -->
+        version
+        FROM member
+        WHERE id = #{id, jdbcType=BIGINT}
+        <!-- 杩囨护宸插垹闄ょ殑璁板綍 -->
+        AND (delete_flag = 0 OR delete_flag IS NULL)
+    </select>
+
+    <!-- 鏍规嵁SelectDto鏉′欢鏌ヨ鍒楄〃 -->
+    <select id="selectList" parameterType="com.g2rain.member.dto.MemberSelectDto" resultMap="BaseResultMap">
+        SELECT
+        <!-- 涓婚敭瀛楁 -->
+        id,
+        <!-- 鍩虹瀛楁 -->
+        create_time, update_time,
+        <!-- 涓氬姟瀛楁 -->
+        organ_id, member_no, name, avatar, mobile, status,
+        <!-- deleteFlag瀛楁锛堝鏋滃瓨鍦級 -->
+        delete_flag,
+        <!-- version瀛楁锛堝鏋滃瓨鍦級 -->
+        version
+        FROM member
+        <where>
+            <!-- 涓婚敭绛涢€?-->
+            <if test="id != null">
+                AND id = #{id, jdbcType=BIGINT}
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                AND id IN
+                <foreach collection="ids" item="item" open="(" separator="," close=")">
+                    #{item, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <!-- 鍩虹瀛楁绛涢€夛紙createTime鍜寀pdateTime鏃堕棿绛涢€夛級 -->
+            <if test="createTime != null">
+                <if test="createTime[0] != '' and (createTime.size() lt 2 or createTime[1] == '')">
+                    AND create_time >= #{createTime[0], jdbcType=TIMESTAMP}
+                </if>
+                <if test="createTime.size() >= 2 and createTime[0] == '' and createTime[1] != ''">
+                    AND create_time &lt;= #{createTime[1], jdbcType=TIMESTAMP}
+                </if>
+                <if test="createTime.size() >= 2 and createTime[0] != '' and createTime[1] != ''">
+                    AND create_time BETWEEN #{createTime[0], jdbcType=TIMESTAMP}
+                    AND #{createTime[1], jdbcType=TIMESTAMP}
+                </if>
+            </if>
+            <if test="updateTime != null">
+                <if test="updateTime[0] != '' and (updateTime.size() lt 2 or updateTime[1] == '')">
+                    AND update_time >= #{updateTime[0], jdbcType=TIMESTAMP}
+                </if>
+                <if test="updateTime.size() >= 2 and updateTime[0] == '' and updateTime[1] != ''">
+                    AND update_time &lt;= #{updateTime[1], jdbcType=TIMESTAMP}
+                </if>
+                <if test="updateTime.size() >= 2 and updateTime[0] != '' and updateTime[1] != ''">
+                    AND update_time BETWEEN #{updateTime[0], jdbcType=TIMESTAMP}
+                    AND #{updateTime[1], jdbcType=TIMESTAMP}
+                </if>
+            </if>
+            <!-- 涓氬姟瀛楁绛涢€?-->
+            <if test="organId != null">
+                AND organ_id = #{organId, jdbcType=BIGINT}
+            </if>
+            <if test="memberNo != null">
+                AND member_no = #{memberNo, jdbcType=VARCHAR}
+            </if>
+            <if test="name != null">
+                AND name = #{name, jdbcType=VARCHAR}
+            </if>
+            <if test="avatar != null">
+                AND avatar = #{avatar, jdbcType=VARCHAR}
+            </if>
+            <if test="mobile != null">
+                AND mobile = #{mobile, jdbcType=VARCHAR}
+            </if>
+            <if test="status != null">
+                AND status = #{status, jdbcType=VARCHAR}
+            </if>
+            <!-- 杩囨护宸插垹闄ょ殑璁板綍 -->
+            AND (delete_flag = 0 OR delete_flag IS NULL)
+        </where>
+        <include refid="dynamicOrderBy"/>
+    </select>
+
+    <!-- 鎻掑叆鍗曟潯璁板綍锛堝拷鐣ユ暟鎹殧绂伙級 -->
+    <insert id="insertWithoutIsolation" parameterType="com.g2rain.member.dao.po.MemberPo">
+        INSERT INTO member (
+        id,
+        create_time, update_time,
+        organ_id, member_no, name, avatar, mobile, status,
+        delete_flag,
+        version
+        ) VALUES (
+        #{id, jdbcType=BIGINT},
+        #{createTime, jdbcType=TIMESTAMP}, #{updateTime, jdbcType=TIMESTAMP},
+        #{organId, jdbcType=BIGINT}, #{memberNo, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR}, #{avatar, jdbcType=VARCHAR}, #{mobile, jdbcType=VARCHAR}, #{status, jdbcType=VARCHAR},
+        0,
+        0
+        )
+    </insert>
+
+    <!-- 鏍规嵁ID鏇存柊璁板綍锛堝拷鐣ユ暟鎹殧绂伙級 -->
+    <update id="updateWithoutIsolation" parameterType="com.g2rain.member.dao.po.MemberPo">
+        UPDATE member
+        <set>
+            <if test="updateTime != null">
+                update_time = #{updateTime, jdbcType=TIMESTAMP},
+            </if>
+            <if test="organId != null">
+                organ_id = #{organId, jdbcType=BIGINT},
+            </if>
+            <if test="memberNo != null">
+                member_no = #{memberNo, jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                name = #{name, jdbcType=VARCHAR},
+            </if>
+            <if test="avatar != null">
+                avatar = #{avatar, jdbcType=VARCHAR},
+            </if>
+            <if test="mobile != null">
+                mobile = #{mobile, jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                status = #{status, jdbcType=VARCHAR},
+            </if>
+            version = version + 1
+        </set>
+        WHERE id = #{id, jdbcType=BIGINT}
+    </update>
+
+    <!-- 鏍规嵁ID鏌ヨ璁板綍锛堝拷鐣ユ暟鎹殧绂伙級 -->
+    <select id="selectByIdWithoutIsolation" parameterType="Long" resultMap="BaseResultMap">
+        SELECT
+        id,
+        create_time, update_time,
+        organ_id, member_no, name, avatar, mobile, status,
+        delete_flag,
+        version
+        FROM member
+        WHERE id = #{id, jdbcType=BIGINT}
+        AND (delete_flag = 0 OR delete_flag IS NULL)
+    </select>
+
+    <!-- 鏍规嵁SelectDto鏉′欢鏌ヨ鍒楄〃锛堝拷鐣ユ暟鎹殧绂伙級 -->
+    <select id="selectListWithoutIsolation" parameterType="com.g2rain.member.dto.MemberSelectDto" resultMap="BaseResultMap">
+        SELECT
+        id,
+        create_time, update_time,
+        organ_id, member_no, name, avatar, mobile, status,
+        delete_flag,
+        version
+        FROM member
+        <where>
+            <if test="id != null">
+                AND id = #{id, jdbcType=BIGINT}
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                AND id IN
+                <foreach collection="ids" item="item" open="(" separator="," close=")">
+                    #{item, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="createTime != null">
+                <if test="createTime[0] != '' and (createTime.size() lt 2 or createTime[1] == '')">
+                    AND create_time >= #{createTime[0], jdbcType=TIMESTAMP}
+                </if>
+                <if test="createTime.size() >= 2 and createTime[0] == '' and createTime[1] != ''">
+                    AND create_time &lt;= #{createTime[1], jdbcType=TIMESTAMP}
+                </if>
+                <if test="createTime.size() >= 2 and createTime[0] != '' and createTime[1] != ''">
+                    AND create_time BETWEEN #{createTime[0], jdbcType=TIMESTAMP}
+                    AND #{createTime[1], jdbcType=TIMESTAMP}
+                </if>
+            </if>
+            <if test="updateTime != null">
+                <if test="updateTime[0] != '' and (updateTime.size() lt 2 or updateTime[1] == '')">
+                    AND update_time >= #{updateTime[0], jdbcType=TIMESTAMP}
+                </if>
+                <if test="updateTime.size() >= 2 and updateTime[0] == '' and updateTime[1] != ''">
+                    AND update_time &lt;= #{updateTime[1], jdbcType=TIMESTAMP}
+                </if>
+                <if test="updateTime.size() >= 2 and updateTime[0] != '' and updateTime[1] != ''">
+                    AND update_time BETWEEN #{updateTime[0], jdbcType=TIMESTAMP}
+                    AND #{updateTime[1], jdbcType=TIMESTAMP}
+                </if>
+            </if>
+            <if test="organId != null">
+                AND organ_id = #{organId, jdbcType=BIGINT}
+            </if>
+            <if test="memberNo != null">
+                AND member_no = #{memberNo, jdbcType=VARCHAR}
+            </if>
+            <if test="name != null">
+                AND name = #{name, jdbcType=VARCHAR}
+            </if>
+            <if test="avatar != null">
+                AND avatar = #{avatar, jdbcType=VARCHAR}
+            </if>
+            <if test="mobile != null">
+                AND mobile = #{mobile, jdbcType=VARCHAR}
+            </if>
+            <if test="status != null">
+                AND status = #{status, jdbcType=VARCHAR}
+            </if>
+            AND (delete_flag = 0 OR delete_flag IS NULL)
+        </where>
+        <include refid="dynamicOrderBy"/>
+    </select>
+
+    <!-- 根据ID查询记录（包含已逻辑删除，忽略数据隔离） -->
+    <select id="selectByIdIncludingDeletedWithoutIsolation" parameterType="Long" resultMap="BaseResultMap">
+        SELECT
+        id,
+        create_time, update_time,
+        organ_id, member_no, name, avatar, mobile, status,
+        delete_flag,
+        version
+        FROM member
+        WHERE id = #{id, jdbcType=BIGINT}
+    </select>
+</mapper>
