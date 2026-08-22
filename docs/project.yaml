@@ -93,16 +93,38 @@ documentation:
   entry: docs/index.md
   architecture: docs/architecture/overview.md
   decisions: docs/decisions
+  agentEntry: AGENTS.md
   required:
     - docs/community.md
+    - docs/requirements/README.md
     - docs/architecture/overview.md
     - docs/architecture/modules.md
     - docs/architecture/dependencies.md
     - docs/architecture/runtime-flows.md
     - docs/development/local-development.md
     - docs/development/code-conventions.md
+    - docs/development/api-conventions.md
+    - docs/development/database-conventions.md
+    - docs/development/testing.md
+    - docs/development/reference-implementation.md
+    - docs/development/dependency-policy.md
+    - docs/development/definition-of-done.md
     - docs/development/git-workflow.md
     - docs/development/code-generation.md
+    - docs/security/security-boundaries.md
     - docs/operations/configuration.md
     - docs/operations/deployment.md
+    - docs/operations/observability.md
     - docs/operations/troubleshooting.md
+
+aiCoding:
+  instructionEntry: AGENTS.md
+  requirementTemplate: docs/requirements/README.md
+  testingPolicy: docs/development/testing.md
+  definitionOfDone: docs/development/definition-of-done.md
+  validation:
+    - 读取需求、架构、代码规范和相关专题文档
+    - 检查当前源码、POM、配置和 Git Diff
+    - 补充必要测试并执行 mvn clean verify
+    - 动态检查文档链接与项目元数据一致性
+    - 报告未验证事项和剩余风险

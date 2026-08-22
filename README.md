@@ -148,10 +148,17 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 | 核心运行流程 | [docs/architecture/runtime-flows.md](docs/architecture/runtime-flows.md) |
 | 本地开发 | [docs/development/local-development.md](docs/development/local-development.md) |
 | 代码规范 | [docs/development/code-conventions.md](docs/development/code-conventions.md) |
+| AI Coding 入口 | [AGENTS.md](AGENTS.md) |
+| 需求设计模板 | [docs/requirements/README.md](docs/requirements/README.md) |
+| API 与数据库规范 | [API](docs/development/api-conventions.md) · [数据库](docs/development/database-conventions.md) |
+| 测试与完成定义 | [测试策略](docs/development/testing.md) · [Definition of Done](docs/development/definition-of-done.md) |
+| 安全与租户边界 | [docs/security/security-boundaries.md](docs/security/security-boundaries.md) |
+| 参考实现与依赖治理 | [参考实现](docs/development/reference-implementation.md) · [依赖治理](docs/development/dependency-policy.md) |
 | Git 分支与提交策略 | [docs/development/git-workflow.md](docs/development/git-workflow.md) |
 | CRUD 代码生成 | [docs/development/code-generation.md](docs/development/code-generation.md) |
 | 配置说明 | [docs/operations/configuration.md](docs/operations/configuration.md) |
 | 构建与部署 | [docs/operations/deployment.md](docs/operations/deployment.md) |
+| 可观测性 | [docs/operations/observability.md](docs/operations/observability.md) |
 | 故障排查 | [docs/operations/troubleshooting.md](docs/operations/troubleshooting.md) |
 | 会员编号设计 | [docs/design/member-no-generation.md](docs/design/member-no-generation.md) |
 | 企业微信会员识别 | [docs/design/wechat-work-smart-customer-service-member-identification.md](docs/design/wechat-work-smart-customer-service-member-identification.md) |
@@ -164,6 +171,12 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 - `WithoutIsolation` 数据访问必须伴随显式租户一致性校验。
 - 会员与身份联合创建保持单事务；历史身份不得未经核验自动转移。
 - 提交前执行 `mvn clean verify`，并同步更新受影响的文档或 ADR。
+
+## AI Coding 工作方式
+
+使用 AI Coding 实现需求时，从 [AGENTS.md](AGENTS.md) 开始。重要需求先按[需求设计与验收模板](docs/requirements/README.md)明确目标、非目标、业务规则和验收条件；实现期间遵循架构、代码、API、数据库和安全规范；完成前按[测试策略](docs/development/testing.md)和[完成定义](docs/development/definition-of-done.md)验证。
+
+Agent 应直接读取当前源码、POM、配置、文档和文件差异进行动态检查，不需要在业务仓库中维护仅供 Agent 使用的验证脚本。
 
 ## 职责边界
 

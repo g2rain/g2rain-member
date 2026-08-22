@@ -17,16 +17,28 @@
 
 ### 开发与验证
 
+- [需求设计与验收模板](requirements/README.md)
 - [本地开发](development/local-development.md)
 - [代码规范](development/code-conventions.md)
+- [API 设计规范](development/api-conventions.md)
+- [数据库与数据模型规范](development/database-conventions.md)
+- [测试策略](development/testing.md)
+- [参考实现路径](development/reference-implementation.md)
+- [依赖治理规范](development/dependency-policy.md)
+- [完成定义](development/definition-of-done.md)
 - [Git 分支与提交策略](development/git-workflow.md)
 - [CRUD 代码生成](development/code-generation.md)
 - [架构决策记录](decisions/README.md)
+
+### 安全
+
+- [安全与租户边界](security/security-boundaries.md)
 
 ### 运行与维护
 
 - [配置说明](operations/configuration.md)
 - [构建与部署](operations/deployment.md)
+- [可观测性规范](operations/observability.md)
 - [故障排查](operations/troubleshooting.md)
 
 ### 专题设计
@@ -42,6 +54,7 @@
 
 - README 只保留项目定位、快速开始、架构摘要和文档导航。
 - `docs/project.yaml` 保存机器可读取的职责、模块、命令和社区信息。
+- 根目录 `AGENTS.md` 是 AI Coding 执行入口，只索引并强制执行 `docs` 中的事实来源。
 - 架构的“为什么”通过 ADR 或专题设计文档记录。
 - 代码正确性由项目测试保障；文档与架构声明的一致性由 Agent 结合源码、POM 和 Git Diff 动态检查。
 - 修改模块、依赖方向、领域边界、启动命令、生成流程或运行配置时，应在同一提交中更新相关文档。
