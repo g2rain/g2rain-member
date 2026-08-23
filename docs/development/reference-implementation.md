@@ -27,6 +27,15 @@
 
 `MemberApi` → `MemberController` → `MemberService` → `MemberDao` 展示标准查询、分页、保存、删除和 MapStruct 转换路径。
 
+该路径中的 DTO 分属两个模块：
+
+- `MemberSelectDto`、`MemberIdentitySelectDto` 位于 API 模块，是查询接口契约。
+- `MemberDto`、`MemberIdentityDto` 位于 Biz 模块，是当前 `/save` Controller、Service 和 Converter 使用的本地写入模型。
+
+因此不能把 `com.g2rain.member.dto` 整个包视为 API 契约，也不能从其他服务依赖 Biz JAR 来获得写入 DTO。新增跨服务写入能力时，应在 API 模块设计独立请求契约。
+
+更常见的协作方式是：查询契约留在 API 模块；编辑由 App 经 Gateway 调用 Member；非交互式变化由上游发布领域消息、Member 自主消费。不要把生成的 `MemberDto` 或 `MemberIdentityDto` 移到 API 模块作为通用远程保存接口。
+
 生成新的 CRUD 后不能止步于模板，必须结合需求补充：
 
 - 权限与租户边界。
@@ -46,7 +55,7 @@ API 模块
   Api / Request / SelectDto / Vo / ErrorCode
         ↓
 Biz 模块
-  Controller（协议适配）
+  Controller（协议适配） + 本地写入 Dto（不跨服务发布）
         ↓
   Service（用例、事务、权限、幂等）
         ↓
@@ -56,4 +65,3 @@ Biz 模块
 ```
 
 AI Coding 在引用现有实现时，应先检查目标文件当前状态、测试和 Git Diff，不能假设生成代码天然满足最新规范。
-

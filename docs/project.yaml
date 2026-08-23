@@ -33,6 +33,44 @@ modules:
     mayDependOn:
       - g2rain-member-biz
 
+dtoPolicy:
+  sharedJavaPackage: com.g2rain.member.dto
+  apiModule:
+    path: g2rain-member-api/src/main/java/com/g2rain/member/dto
+    role: 可复用查询、请求及受信内部接口契约
+    types:
+      - MemberSelectDto
+      - MemberIdentitySelectDto
+      - WechatWorkMemberResolveRequest
+      - WechatWorkExternalProfileDto
+  bizModule:
+    path: g2rain-member-biz/src/main/java/com/g2rain/member/dto
+    role: 当前服务本地新增与更新输入及 Biz 内部传输
+    types:
+      - MemberDto
+      - MemberIdentityDto
+  rules:
+    - DTO 架构归属以 Maven 模块源码路径为准，不能只按相同 Java 包名判断
+    - API 模块不得引用物理位于 Biz 模块的 DTO
+    - 其他服务不得依赖 Biz JAR 获取 MemberDto 或 MemberIdentityDto
+    - 需要跨服务复用的写入请求必须在 API 模块定义独立契约
+
+moduleCollaboration:
+  synchronousDefault: query-only
+  queryContracts: g2rain-member-api
+  writePaths:
+    - App 携带 Token 经 Gateway 调用 Member 写接口
+    - Member 监听其他模块发布的领域消息并在自身边界内编辑数据
+  rules:
+    - 不推荐其他后端模块同步调用 Member 的通用保存、更新或删除接口
+    - 数据所有权属于 Member，写入校验、事务、幂等和状态变化必须在 Member 内完成
+    - 跨模块消息只表达已发生的领域事实，不携带绕过 Member 规则的数据库更新指令
+    - 消息消费必须设计幂等、顺序、重试、重复投递、失败恢复和可观测性
+    - 新增跨模块同步写契约属于架构例外，必须通过需求设计和 ADR 说明原因
+  currentState:
+    messageConsumerImplemented: false
+    note: 当前源码尚未实现跨模块消息消费；该策略约束后续协作设计
+
 runtime:
   mainClass: com.g2rain.member.Application
   defaultPort: 8080
@@ -88,6 +126,8 @@ architectureRules:
   - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容
   - 受信内部接口必须显式隐藏并实施访问控制，不得只依赖 URL 前缀隔离
   - 所有会员与身份读写必须保持 organ_id 租户一致性
+  - 模块间同步依赖主要用于查询，不推荐跨模块调用通用保存、更新或删除接口
+  - Member 数据编辑优先由 App 经 Gateway 发起，或由 Member 监听领域消息后自主完成
 
 documentation:
   entry: docs/index.md

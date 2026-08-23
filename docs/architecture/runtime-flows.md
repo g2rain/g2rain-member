@@ -19,6 +19,23 @@ sequenceDiagram
 
 App 和普通外部调用方不得使用企业微信会员解析的受信内部通道。
 
+## 跨模块数据协作
+
+```mermaid
+flowchart LR
+  Backend[其他后端模块] -->|同步查询| QueryApi[g2rain-member-api 查询契约]
+  QueryApi --> Member[g2rain-member]
+  App[前端 App] -->|Token| Gateway[g2rain 网关]
+  Gateway -->|新增 / 更新业务用例| Member
+  Backend -.->|发布领域事实| Event[(领域消息)]
+  Event -.->|幂等消费（规划模式）| Member
+```
+
+- 其他后端模块同步调用 Member 时以查询为主，不直接使用通用保存、更新或删除接口。
+- 交互式编辑由 App 经 Gateway 发起，Member 仍负责最终业务校验和数据变化。
+- 非交互式跨模块变化优先由上游发布领域事实，Member 监听后自主更新。
+- 虚线消息链路是架构推荐模式，当前源码尚未实现消息消费者；实现时必须补充事件契约、幂等、失败恢复、测试和运维说明。
+
 ## 企业微信会员解析或创建
 
 ```mermaid
@@ -74,4 +91,3 @@ flowchart TD
   F --> G
   G --> H[暴露业务接口与 Actuator]
 ```
-

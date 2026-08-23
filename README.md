@@ -66,6 +66,10 @@ g2rain-member-startup
 | `g2rain-member-biz` | 实现领域规则、接口适配、数据访问和幂等创建。 |
 | `g2rain-member-startup` | 组装可运行 Spring Boot 服务及 Jib 镜像。 |
 
+API 与 Biz 模块当前都包含 `com.g2rain.member.dto` 包，但职责不同：API DTO 是可复用契约；Biz 中的 `MemberDto`、`MemberIdentityDto` 是当前服务新增/更新使用的本地输入。判断边界必须以 Maven 模块源码路径为准，详见[模块职责](docs/architecture/modules.md)。
+
+模块间同步依赖以查询为主，不推荐其他后端模块调用 Member 的通用保存、更新或删除接口。会员数据编辑优先由 App 经 Gateway 发起；其他模块触发的数据变化优先通过领域消息通知，由 Member 在自身边界内完成幂等更新。当前源码尚未实现跨模块消息消费者，该模式作为后续协作约束记录在文档中。
+
 ## 技术栈
 
 | 类别 | 技术 |

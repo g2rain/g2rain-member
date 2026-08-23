@@ -20,6 +20,8 @@
 ## 实现约束
 
 - 保持 `g2rain-member-startup → g2rain-member-biz → g2rain-member-api` 依赖方向。
+- 跨模块同步依赖原则上只发布查询契约，不新增供其他后端模块直接调用的通用保存、更新或删除契约。
+- Member 数据编辑优先由 App 经 Gateway 调用本服务写接口，或由 Member 监听其他模块发布的领域消息后自主更新；不能让其他模块越过 Member 领域规则直接编辑数据。
 - Controller 只处理协议适配；业务规则、事务、幂等和租户校验放在 Service/Domain。
 - 所有会员和身份数据必须保持请求、身份与会员的 `organId` 一致。
 - 使用 `WithoutIsolation` DAO 方法时必须在受信 Service 中显式完成租户和访问边界校验。
@@ -35,4 +37,3 @@
 - 执行 `mvn clean verify`；无法执行时明确报告原因和未验证风险。
 - 动态检查 Markdown 相对链接、`docs/project.yaml`、POM、启动类、端口和模块边界的一致性。
 - 按 `docs/development/definition-of-done.md` 逐项确认并报告结果。
-

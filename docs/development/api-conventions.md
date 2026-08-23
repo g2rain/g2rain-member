@@ -6,6 +6,33 @@
 - 写入或独立业务请求使用 `Dto` / `Request`，查询使用 `SelectDto`，响应使用 `Vo`。
 - PO 和 Biz 内部 DTO 不得作为公开或跨服务响应。
 
+## 当前 DTO 分布
+
+| 模块 | 类型 | 用途 |
+| --- | --- | --- |
+| API | `MemberSelectDto`、`MemberIdentitySelectDto` | `MemberApi`、`MemberIdentityApi` 的查询条件 |
+| API | `WechatWorkMemberResolveRequest`、`WechatWorkExternalProfileDto` | 企业微信受信内部契约输入 |
+| Biz | `MemberDto`、`MemberIdentityDto` | Biz Controller 的新增/更新输入及 Service、Converter 内部传输 |
+
+API 与 Biz 的 DTO 当前使用相同 Java 包名，但只有 API 模块中的类型会随 `g2rain-member-api` JAR 发布。`MemberDto`、`MemberIdentityDto` 当前不属于其他服务可复用的契约。
+
+这种分布是有意的模块边界：
+
+- API 模块优先发布供其他后端模块使用的查询契约。
+- Biz 写入 DTO 服务于 App 经 Gateway 发起的 Member 编辑用例，不鼓励其他后端模块同步调用。
+- 其他模块发生的业务事实需要改变会员数据时，优先发布领域消息，由 Member 自主消费和编辑。
+
+如果确有场景需要把 Member 写能力发布为稳定的跨模块同步契约，应：
+
+1. 在 API 模块定义具有明确业务语义的请求类型和 Api 方法。
+2. 评估 `organId` 是否应来自可信上下文，而不是允许调用方任意提交。
+3. 明确客户端可写字段，避免直接暴露生成器根据表字段创建的宽模型。
+4. 补充兼容策略、调用方测试和版本升级说明。
+5. 保留 Biz DTO 作为内部模型或完成迁移后移除，不能形成两个含义重叠的公开契约。
+6. 说明为什么 App 调用或领域消息不能满足，并通过 ADR 记录该架构例外。
+
+不得直接把通用 `/save`、`/update` 或 `/delete` 包装到 API 模块供其他后端模块调用。跨模块写命令必须表达具体业务语义，并由 Member 保留数据所有权和最终决策权。
+
 ## 路由与方法
 
 - 沿用项目 snake_case 路由，例如 `/member_identity`、`/resolve_or_create`。
@@ -42,4 +69,3 @@
 - API 模块、Controller 实现、OpenAPI 描述和调用示例保持一致。
 - 参数校验、权限入口、错误码和测试同步更新。
 - 破坏性变更必须有需求设计、兼容策略和必要 ADR。
-
