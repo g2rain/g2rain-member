@@ -2,6 +2,8 @@
 
 这里是 `g2rain-member` 的项目级技术文档，也是根 README、架构验证和后续文档站点的事实来源。
 
+本项目正式采用组织级 [`java-domain-service 1.0.0`](https://github.com/g2rain/g2rain/tree/architecture-v1.0.0/docs/architecture/profiles/java-domain-service)。中央 Profile 管理同类服务公共规则，本目录维护 Member 领域设计、当前实现和[架构例外](architecture/deviations.md)，基线固定引用 `architecture-v1.0.0` Tag。
+
 ## 项目定位
 
 `g2rain-member` 是 g2rain 平台的会员领域服务，维护租户内会员、稳定会员编号及外部身份绑定，并为企业微信等可信接入渠道提供会员解析与幂等创建能力。
@@ -14,6 +16,7 @@
 - [模块职责](architecture/modules.md)
 - [依赖边界](architecture/dependencies.md)
 - [核心运行流程](architecture/runtime-flows.md)
+- [相对中央基线的架构例外](architecture/deviations.md)
 
 ### 开发与验证
 

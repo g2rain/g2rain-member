@@ -1,5 +1,7 @@
 # 架构总览
 
+本项目采用 g2rain [`java-domain-service 1.0.0`](https://github.com/g2rain/g2rain/tree/architecture-v1.0.0/docs/architecture/profiles/java-domain-service)。本页描述 Member 领域落地；相对中央基线的有意偏离见[架构例外](deviations.md)。
+
 ## 系统职责
 
 `g2rain-member` 位于 g2rain 平台会员领域层，是租户内会员主数据和外部会员身份关系的权威服务。

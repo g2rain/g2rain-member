@@ -27,6 +27,7 @@ g2rain/g2rain-member:<project.version>
 
 ## 部署前检查
 
+- MySQL 版本不低于 `8.0.13`，并与本地、CI 和测试环境保持兼容。
 - MySQL 结构已安全升级；不要在已有数据环境重复执行会删表的初始化 SQL。
 - Nacos namespace、group、服务名与凭证正确。
 - Redis 和数据库已按环境隔离。
@@ -38,4 +39,3 @@ g2rain/g2rain-member:<project.version>
 ## 运行观测
 
 Actuator 暴露 `health`、`info` 和 `metrics`。生产环境应通过网络策略、网关或管理端口限制访问，不要直接暴露管理接口。
-

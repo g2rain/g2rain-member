@@ -1,5 +1,7 @@
 # 模块与依赖边界
 
+本页是中央 `java-domain-service` 模块规则在 Member 中的具体落地。公共规则以[中央 Profile 1.0.0](https://github.com/g2rain/g2rain/tree/architecture-v1.0.0/docs/architecture/profiles/java-domain-service)为准，项目偏离必须登记到[架构例外](deviations.md)。
+
 ## 允许的方向
 
 ```text

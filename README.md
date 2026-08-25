@@ -11,7 +11,7 @@
 
 g2rain 平台会员主数据与外部身份绑定服务，维护租户内会员、稳定会员编号、会员状态及企业微信等身份关系，并为可信接入渠道提供会员解析与幂等创建能力。
 
-[官网](https://www.g2rain.com) · [完整文档](docs/index.md) · [架构说明](docs/architecture/overview.md) · [代码规范](docs/development/code-conventions.md) · [Git 工作流](docs/development/git-workflow.md) · [Issues](https://github.com/g2rain/g2rain/issues) · [Discussions](https://github.com/g2rain/g2rain/discussions)
+[官网](https://www.g2rain.com) · [完整文档](docs/index.md) · [中央架构 Profile](https://github.com/g2rain/g2rain/tree/architecture-v1.0.0/docs/architecture/profiles/java-domain-service) · [架构说明](docs/architecture/overview.md) · [代码规范](docs/development/code-conventions.md) · [Git 工作流](docs/development/git-workflow.md) · [Issues](https://github.com/g2rain/g2rain/issues) · [Discussions](https://github.com/g2rain/g2rain/discussions)
 
 ## 项目定位
 
@@ -87,7 +87,7 @@ API 与 Biz 模块当前都包含 `com.g2rain.member.dto` 包，但职责不同�
 
 - JDK 25
 - Maven 3.9+
-- MySQL 8+
+- MySQL 8.0.13+
 - Redis（使用相关能力时）
 - Nacos（使用 `nacos` profile 时）
 
@@ -150,6 +150,7 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 | 架构总览 | [docs/architecture/overview.md](docs/architecture/overview.md) |
 | 模块与依赖 | [docs/architecture/modules.md](docs/architecture/modules.md) |
 | 核心运行流程 | [docs/architecture/runtime-flows.md](docs/architecture/runtime-flows.md) |
+| 中央基线与项目例外 | [Java Domain Service 1.0.0](https://github.com/g2rain/g2rain/tree/architecture-v1.0.0/docs/architecture/profiles/java-domain-service) · [本项目例外](docs/architecture/deviations.md) |
 | 本地开发 | [docs/development/local-development.md](docs/development/local-development.md) |
 | 代码规范 | [docs/development/code-conventions.md](docs/development/code-conventions.md) |
 | AI Coding 入口 | [AGENTS.md](AGENTS.md) |

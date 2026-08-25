@@ -5,6 +5,15 @@ role: 平台会员主数据与外部身份绑定服务
 language: Java
 buildTool: Maven
 
+architectureBaseline:
+  repository: https://github.com/g2rain/g2rain
+  ref: architecture-v1.0.0
+  profile: docs/architecture/profiles/java-domain-service
+  version: 1.0.0
+  status: adopted
+  releasedAt: "2026-08-24"
+  deviations: docs/architecture/deviations.md
+
 ownership:
   owns:
     - 租户内会员主数据、状态与稳定会员编号
@@ -75,6 +84,8 @@ runtime:
   mainClass: com.g2rain.member.Application
   defaultPort: 8080
   defaultProfile: dev
+  minimumVersions:
+    mysql: "8.0.13"
   dependencies:
     - MySQL
     - Redis
@@ -112,7 +123,7 @@ gitWorkflow:
     - feature/* 和 fix/* 不得绕过 develop 直接合并到 main
     - main 承担正式发布和版本号升级
     - common、starter 等提供 JAR 的项目发布时必须检查并按兼容性升级版本号
-  commitFormat: type(scope): summary
+  commitFormat: "type(scope): summary"
 
 architectureRules:
   - g2rain-member-api 不得依赖 g2rain-member-biz 或 g2rain-member-startup
@@ -126,6 +137,7 @@ architectureRules:
   - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容
   - 受信内部接口必须显式隐藏并实施访问控制，不得只依赖 URL 前缀隔离
   - 所有会员与身份读写必须保持 organ_id 租户一致性
+  - 仅有效记录唯一且删除后允许重建时使用 IF(delete_flag = 0, 0, NULL) 函数唯一索引，不使用普通 UNIQUE (..., delete_flag)
   - 模块间同步依赖主要用于查询，不推荐跨模块调用通用保存、更新或删除接口
   - Member 数据编辑优先由 App 经 Gateway 发起，或由 Member 监听领域消息后自主完成
 
@@ -141,6 +153,7 @@ documentation:
     - docs/architecture/modules.md
     - docs/architecture/dependencies.md
     - docs/architecture/runtime-flows.md
+    - docs/architecture/deviations.md
     - docs/development/local-development.md
     - docs/development/code-conventions.md
     - docs/development/api-conventions.md
