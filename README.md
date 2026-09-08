@@ -38,12 +38,12 @@ flowchart LR
   IAM -->|签发用于 Gateway 的 Token| App
   App -->|携带 Token| Gateway[g2rain 网关]
   Gateway -->|公开会员 API| Member[g2rain-member]
-  WeCom[企业微信] --> Connector[企业微信接入模块]
+  WeCom[企业微信] --> Connector[企业微信智能客服模块]
   Connector -->|验签、解密、可信租户确认| IAM
   Connector -->|受信内部会员解析| Member
 ```
 
-App 必须通过 Gateway 使用公开接口。企业微信接入模块必须先由 IAM 验证回调并取得可信租户上下文，再调用 Member 的内部解析接口；Member 不处理回调密文、签名或完整客服消息。
+App 必须通过 Gateway 使用公开接口。企业微信智能客服模块必须先由 IAM 验证回调并取得可信租户上下文，再调用 Member 的内部解析接口；Member 不处理回调密文、签名或完整客服消息。
 
 ## 模块架构
 
@@ -167,6 +167,7 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 | 故障排查 | [docs/operations/troubleshooting.md](docs/operations/troubleshooting.md) |
 | 会员编号设计 | [docs/design/member-no-generation.md](docs/design/member-no-generation.md) |
 | 企业微信会员识别 | [docs/design/wechat-work-smart-customer-service-member-identification.md](docs/design/wechat-work-smart-customer-service-member-identification.md) |
+| 企业微信客服初始化 | [docs/design/wechat-work-customer-service-initialization.md](docs/design/wechat-work-customer-service-initialization.md) |
 | 社区与贡献 | [docs/community.md](docs/community.md) |
 
 ## 开发约定
@@ -188,7 +189,7 @@ Agent 应直接读取当前源码、POM、配置、文档和文件差异进行�
 本项目不负责：
 
 - 平台登录、Passport、OAuth/OIDC、授权码或 Token 签发，这些由 `g2rain-iam` 负责。
-- 企业微信回调验签、解密和客服消息拉取，这些由 IAM 与企业微信接入模块负责。
+- 企业微信回调验签、解密和客服消息拉取，这些由 IAM 与企业微信智能客服模块负责。
 - 网关路由、统一入口鉴权和请求转发。
 - 咨询、工单、订单、权益等会员下游业务。
 

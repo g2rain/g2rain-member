@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * 企业微信会员解析内部 API，供企业微信接入模块等服务间调用。
+ * 企业微信会员解析内部 API，供企业微信智能客服模块等服务间调用。
  */
 @Tag(name = "企业微信会员解析（内部）", description = "按 organ + external_userid 解析或创建会员")
 public interface WechatWorkMemberInternalApi {

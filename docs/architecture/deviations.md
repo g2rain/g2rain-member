@@ -14,7 +14,7 @@
 
 ### 当前例外
 
-企业微信接入模块可以通过受信内部接口同步调用 Member 的 `resolveOrCreate` 用例。该用例可能在同一事务中创建 `member` 和 `member_identity`，属于跨模块同步写入例外。
+企业微信智能客服模块可以通过受信内部接口同步调用 Member 的 `resolveOrCreate` 用例。该用例可能在同一事务中创建 `member` 和 `member_identity`，属于跨模块同步写入例外。
 
 ### 原因
 

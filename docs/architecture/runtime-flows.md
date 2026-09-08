@@ -41,13 +41,16 @@ flowchart LR
 ```mermaid
 sequenceDiagram
   participant WeCom as 企业微信
-  participant Connector as 企业微信接入模块
+  participant Connector as 企业微信智能客服模块
   participant IAM as g2rain-iam
+  participant Basis as g2rain-basis
   participant Member as g2rain-member
   participant DB as MySQL
 
   WeCom->>Connector: 智能客服回调通知
   Connector->>IAM: 验签、解密并确认租户
+  IAM->>Basis: 校验三方授权 ACTIVE 与企业 Organ 映射
+  Basis-->>IAM: organId 等可信事实
   IAM-->>Connector: 可信 organId 与回调上下文
   Connector->>WeCom: sync_msg 拉取完整消息
   Connector->>Member: organId + externalUserId + 白名单资料
@@ -62,7 +65,7 @@ sequenceDiagram
   Member-->>Connector: memberId、memberNo、状态与创建标识
 ```
 
-详细规则见[企业微信智能客服会员识别](../design/wechat-work-smart-customer-service-member-identification.md)。
+详细规则见[企业微信智能客服会员识别](../design/wechat-work-smart-customer-service-member-identification.md)。开通 / 运行时 / 取消授权的四方交互时序见[企业微信客服机器人调用接口前的初始化](../design/wechat-work-customer-service-initialization.md) §3.1–§3.5。
 
 ## 并发首次创建
 

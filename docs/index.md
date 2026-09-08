@@ -48,6 +48,7 @@
 
 - [会员编号生成规范](design/member-no-generation.md)
 - [企业微信智能客服会员识别](design/wechat-work-smart-customer-service-member-identification.md)
+- [企业微信客服机器人调用接口前的初始化](design/wechat-work-customer-service-initialization.md)
 
 ### 社区
 
