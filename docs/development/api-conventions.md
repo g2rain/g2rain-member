@@ -11,7 +11,7 @@
 | 模块 | 类型 | 用途 |
 | --- | --- | --- |
 | API | `MemberSelectDto`、`MemberIdentitySelectDto` | `MemberApi`、`MemberIdentityApi` 的查询条件 |
-| API | `WechatWorkMemberResolveRequest`、`WechatWorkExternalProfileDto` | 企业微信受信内部契约输入 |
+| API | `WechatWorkMemberResolveRequest`、`WechatWorkExternalProfileDto` | 企业微信受信内部契约输入（**仅** IAM 在受信服务网络内直连；不经过 Gateway、不做调用方鉴权） |
 | Biz | `MemberDto`、`MemberIdentityDto` | Biz Controller 的新增/更新输入及 Service、Converter 内部传输 |
 
 API 与 Biz 的 DTO 当前使用相同 Java 包名，但只有 API 模块中的类型会随 `g2rain-member-api` JAR 发布。`MemberDto`、`MemberIdentityDto` 当前不属于其他服务可复用的契约。

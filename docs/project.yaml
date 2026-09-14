@@ -21,8 +21,8 @@ ownership:
     - 企业微信外部联系人会员的解析与幂等创建
     - 会员资料最小化保存、租户隔离和身份历史占位
   excludes:
-    - 员工 Passport、平台登录、OAuth/OIDC 与 Token 签发
-    - 企业微信回调验签、解密和 sync_msg 消息拉取
+    - 员工 Passport、平台登录、OAuth/OIDC 与 Token 签发（MEMBER Token 由 IAM 签发）
+    - 企业微信回调解密（IAM decrypt）、memberResolveCode 与 sync_msg 消息拉取
     - 网关路由、统一入口鉴权和请求转发
     - 咨询、工单、订单和其他会员下游业务
 
@@ -132,10 +132,11 @@ architectureRules:
   - API 模块不得引用 controller、service、dao、config 等实现包
   - 前端 App 通过 g2rain-iam 完成认证并取得用于 Gateway 的 Token
   - 前端 App 和普通外部调用方必须通过 Gateway 访问 Member 的公开接口
-  - 企业微信智能客服模块必须先通过 IAM 验证回调并取得可信租户上下文
-  - 企业微信智能客服模块只能通过受信内部契约解析或创建会员
-  - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容
-  - 受信内部接口必须显式隐藏并实施访问控制，不得只依赖 URL 前缀隔离
+  - 企业微信智能客服模块位于 Gateway 外，必须先通过 IAM decrypt 取得 memberResolveCode，再经 POST /auth/member/token 换票
+  - 企业微信智能客服模块不得直连 Member；会员解析由 IAM token 编排，并在受信服务网络内通过服务发现无鉴权直连 Member
+  - IAM 可签发 SessionType=MEMBER 短期 Token，仅供客服模块经 Gateway 调下游业务，不创建 passport
+  - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容，不签发 Token
+  - IAM 到 Member 的 resolveOrCreate 接受无鉴权直连；Member 信任 IAM 传入的 organId，服务及内部接口不得暴露到非受信网络
   - 所有会员与身份读写必须保持 organ_id 租户一致性
   - 仅有效记录唯一且删除后允许重建时使用 IF(delete_flag = 0, 0, NULL) 函数唯一索引，不使用普通 UNIQUE (..., delete_flag)
   - 模块间同步依赖主要用于查询，不推荐跨模块调用通用保存、更新或删除接口

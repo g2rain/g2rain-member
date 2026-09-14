@@ -12,7 +12,7 @@
 4. `g2rain-member-biz/.../WechatWorkMemberResolver.java`：领域用例接口。
 5. `g2rain-member-biz/.../WechatWorkMemberResolverImpl.java`：身份查询、会员创建和冲突处理。
 6. `g2rain-member-biz/.../WechatWorkMemberResolverImplTest.java`：关键业务场景测试。
-7. [企业微信会员识别设计](../design/wechat-work-smart-customer-service-member-identification.md)：完整边界和异常规则。
+7. [企业微信客户接入会员](../design/wechat-work-customer-member-onboarding.md)：开通就绪、解析创建、MEMBER Token 与异常规则。
 
 重点观察：
 

@@ -48,24 +48,27 @@ sequenceDiagram
   participant DB as MySQL
 
   WeCom->>Connector: 智能客服回调通知
-  Connector->>IAM: 验签、解密并确认租户
+  Connector->>IAM: POST /auth/wecom/customer_service/decrypt
   IAM->>Basis: 校验三方授权 ACTIVE 与企业 Organ 映射
   Basis-->>IAM: organId 等可信事实
-  IAM-->>Connector: 可信 organId 与回调上下文
+  IAM-->>Connector: organId、plainBody、memberResolveCode
+  Note over Connector: decrypt 无 external_userid，不创建会员
   Connector->>WeCom: sync_msg 拉取完整消息
-  Connector->>Member: organId + externalUserId + 白名单资料
-  Member->>DB: 查询包含逻辑删除的身份
-  alt 身份有效
-    Member->>DB: 查询并校验会员
-  else 身份不存在
-    Member->>DB: 同事务创建会员与身份
-  else 身份已删除或数据异常
-    Member-->>Connector: 返回明确业务错误
+  loop 每条消息按 msgid 幂等
+    Connector->>IAM: POST /auth/member/token
+    IAM->>Member: 受信服务网络内无鉴权直连 resolveOrCreate
+    Member->>DB: 查询含逻辑删除的身份 / 必要时同事务创建
+    Member-->>IAM: memberId、状态、newMember
+    IAM-->>Connector: MEMBER Token + member 摘要（按会话复用）
+    opt 需下游业务
+      Connector->>Gateway: 持 MEMBER Token 调业务 API
+    end
   end
-  Member-->>Connector: memberId、memberNo、状态与创建标识
 ```
 
-详细规则见[企业微信智能客服会员识别](../design/wechat-work-smart-customer-service-member-identification.md)。开通 / 运行时 / 取消授权的四方交互时序见[企业微信客服机器人调用接口前的初始化](../design/wechat-work-customer-service-initialization.md) §3.1–§3.5。
+详细规则见[企业微信客户接入会员](../design/wechat-work-customer-member-onboarding.md)。
+
+该内部调用不经过 Gateway，也不携带服务凭证。Member 信任 IAM 提供的租户事实，因此 Member 服务必须保持在受信服务网络内，不得向公网、客户端网络或其他非受信网络开放。
 
 ## 并发首次创建
 

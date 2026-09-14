@@ -39,11 +39,11 @@ flowchart LR
   App -->|携带 Token| Gateway[g2rain 网关]
   Gateway -->|公开会员 API| Member[g2rain-member]
   WeCom[企业微信] --> Connector[企业微信智能客服模块]
-  Connector -->|验签、解密、可信租户确认| IAM
-  Connector -->|受信内部会员解析| Member
+  Connector -->|decrypt / member token| IAM
+  IAM -->|受信服务网络直连 resolveOrCreate| Member
 ```
 
-App 必须通过 Gateway 使用公开接口。企业微信智能客服模块必须先由 IAM 验证回调并取得可信租户上下文，再调用 Member 的内部解析接口；Member 不处理回调密文、签名或完整客服消息。
+App 必须通过 Gateway 使用公开接口。企业微信智能客服模块只调 IAM（`decrypt` / `POST /auth/member/token`）与企微业务接口，**不得**直连 Member；IAM 通过服务发现，在受信服务网络内无鉴权直连 Member 的 `resolveOrCreate`。这是有意接受的信任模型：Member 信任 IAM 提交的 `organId`，且 Member 服务及其 `/internal/wechat_work_member/**` 接口不得暴露到公网、客户端网络或其他非受信网络。Member 不处理回调密文、签名或完整客服消息。
 
 ## 模块架构
 
@@ -166,8 +166,7 @@ mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
 | 可观测性 | [docs/operations/observability.md](docs/operations/observability.md) |
 | 故障排查 | [docs/operations/troubleshooting.md](docs/operations/troubleshooting.md) |
 | 会员编号设计 | [docs/design/member-no-generation.md](docs/design/member-no-generation.md) |
-| 企业微信会员识别 | [docs/design/wechat-work-smart-customer-service-member-identification.md](docs/design/wechat-work-smart-customer-service-member-identification.md) |
-| 企业微信客服初始化 | [docs/design/wechat-work-customer-service-initialization.md](docs/design/wechat-work-customer-service-initialization.md) |
+| 企业微信客户接入会员 | [docs/design/wechat-work-customer-member-onboarding.md](docs/design/wechat-work-customer-member-onboarding.md) |
 | 社区与贡献 | [docs/community.md](docs/community.md) |
 
 ## 开发约定

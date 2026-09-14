@@ -4,8 +4,12 @@
 
 - 前端 App 通过 IAM 登录取得 Token，再经 Gateway 访问 Member 公开接口。
 - 普通客户端不得直连 `/internal/...`。
-- 企业微信智能客服模块必须先通过 IAM 完成回调验签、解密和可信租户确认，再调用会员内部解析接口。
-- URL 前缀、内网地址和 OpenAPI 隐藏都不能替代服务身份验证与授权。
+- 企业微信智能客服模块位于 Gateway 外：只调 IAM `decrypt` / `token` 与企业微信；不直连 Member。
+- Member `resolveOrCreate` 的约定调用方是 `g2rain-iam`；IAM 通过服务发现无鉴权直连，Member 不校验调用方身份并信任 IAM 传入的 `organId`。
+- 该模式以受信服务网络为安全边界。Member 服务及其 `/internal/...` 接口不得暴露到公网、客户端网络或其他非受信网络；若网络边界发生变化，须先引入调用方鉴权。
+- IAM 可签发 `SessionType=MEMBER` 短期 Token，**仅**供客服模块经 Gateway 调下游业务；不下发终端微信用户，不充当员工登录。
+- `memberResolveCode` 与 MEMBER Token 分轨校验，不得混用；IAM→Member 直连不使用这两类凭证。
+- 除已在 `docs/architecture/deviations.md` 登记的 IAM→Member 受信网络直连例外外，URL 前缀、内网地址和 OpenAPI 隐藏不能替代服务身份验证与授权；该例外的安全性由部署隔离和网络策略承担。
 
 ## 租户边界
 
@@ -36,4 +40,3 @@
 - 明确调用者、信任来源、攻击面和拒绝路径。
 - 增加越权、跨租户、重放、伪造输入和敏感信息泄露测试。
 - 需要时增加 ADR，并说明兼容与部署顺序。
-

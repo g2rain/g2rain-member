@@ -32,8 +32,9 @@ g2rain/g2rain-member:<project.version>
 - Nacos namespace、group、服务名与凭证正确。
 - Redis 和数据库已按环境隔离。
 - 所有敏感配置由部署环境注入。
-- Gateway 已配置公开会员 API 的路由和鉴权。
-- 企业微信受信调用已完成 IAM 回调验证、可信租户传递和内部服务访问控制。
+- Gateway 已配置公开会员 API 与 `SessionType=MEMBER` Token 鉴权策略；IAM→Member 的内部解析不经过 Gateway。
+- Member 仅部署在受信服务网络，未暴露到公网、客户端网络或其他非受信网络；网络策略仅开放必要的服务间访问。
+- 企业微信链路：IAM `decrypt`（`memberResolveCode`）→ 客服 sync_msg → IAM `POST /auth/member/token` → Member；客服模块不直连 Member。
 - `mvn clean verify` 已通过，Agent 已核对文档、POM、源码与 Git Diff。
 
 ## 运行观测

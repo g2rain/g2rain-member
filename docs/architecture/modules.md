@@ -63,7 +63,7 @@ API 和 Biz 模块当前都包含物理包名 `com.g2rain.member.dto`。判断 D
 | 源码位置 | 当前类型 | 架构角色 | 可见性边界 |
 | --- | --- | --- | --- |
 | `g2rain-member-api/src/main/java/com/g2rain/member/dto` | `MemberSelectDto`、`MemberIdentitySelectDto` | 会员和会员身份查询契约 | 可由 API 使用方复用 |
-| 同上 | `WechatWorkMemberResolveRequest`、`WechatWorkExternalProfileDto` | 受信企业微信会员解析契约与白名单资料 | 可由明确的内部调用方复用 |
+| 同上 | `WechatWorkMemberResolveRequest`、`WechatWorkExternalProfileDto` | 受信企业微信会员解析契约与白名单资料 | **仅** `g2rain-iam` 经 Gateway 复用；客服模块不得直连 |
 | `g2rain-member-biz/src/main/java/com/g2rain/member/dto` | `MemberDto`、`MemberIdentityDto` | App 经 Gateway 使用的 Member 写入输入及 Biz 内部传输模型 | 不作为后端模块间同步契约 |
 
 Biz DTO 继承 `BaseDto`，携带创建/更新校验和可写字段，经 `MemberConverter` 或 `MemberIdentityConverter` 转为 PO。它们不应直接用作查询条件、返回对象或其他服务的依赖类型。
