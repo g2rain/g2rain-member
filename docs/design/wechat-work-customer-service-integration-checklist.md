@@ -19,7 +19,7 @@
 | CS-5 | 持返回的 `SessionType=MEMBER` Token 经 Gateway 调下游 | 不把 Token 下发终端微信用户；不作员工登录 |
 | CS-6 | 禁止直连 Member `/internal/wechat_work_member/**` | 代码与网络策略均无直连 |
 | CS-7 | 不持有回调 Token / EncodingAESKey 明文 | 密钥仅在 IAM 配置；日志无密钥与解密全文 |
-| CS-8 | 同一 `memberResolveCode` 可覆盖一次回调多消息；按 `msgid` 幂等 | 重试不重复建档；复用未过期 MEMBER Token |
+| CS-8 | 同一 `memberResolveCode` 为短时可复用票据，可覆盖一次回调多消息；按 `msgid` 幂等 | 校验不单次消费；重试不重复建档；复用未过期 MEMBER Token |
 
 ## 2. Gateway 与服务网络
 
@@ -27,7 +27,7 @@
 | --- | --- | --- |
 | GW-1 | 客服 → IAM：`/auth/wecom/customer_service/decrypt`、`/auth/member/token` | 按客服/内部应用调用方认证开放；非终端用户登录；非企微直连 |
 | GW-2 | IAM → Member：`/internal/wechat_work_member/**` | 不经 Gateway、无鉴权直连；Member 仅位于受信服务网络，不对公网、客户端或非受信服务开放 |
-| GW-3 | 客服 → 下游业务：接受 `SessionType=MEMBER` | 与 USER / PASSPORT 分轨：JWT 写 `memberId`/`X-MEMBER-ID`，跳过 DPoP/摘要；入口权限走 DefaultPerm 且要求 `organId`+`memberId` |
+| GW-3 | 客服 → 下游业务：接受 `SessionType=MEMBER` | 与 USER / PASSPORT 同一 Token 使用协议（DPoP/摘要）；入口权限走 `MemberPerm` 且要求 `organId`+`memberId`；下游只读 Principal `memberId` |
 | GW-4 | 拒绝伪造 `organId` 的普通客户端直达 Member 内部写接口 | 越权探测返回拒绝且不落敏感信息 |
 | GW-5 | 限流与超时 | `decrypt` / `token` / `resolveOrCreate` 有明确超时与限流配置 |
 
@@ -67,4 +67,4 @@
 | `WeComCallbackVerifier` + `POST .../decrypt` | g2rain-iam | 已实现 |
 | `POST /auth/member/token` + MEMBER Token | g2rain-iam | 已实现 |
 | `resolveOrCreate` 约定调用方为 IAM | g2rain-member | 受信服务网络无鉴权直连；Member 不得暴露到非受信网络 |
-| 客服模块与 Gateway 策略 | 外仓 | Gateway webflux/webmvc 已支持 MEMBER JWT、`X-MEMBER-ID`、跳过 DPoP/摘要；客服模块仍外仓 |
+| 客服模块与 Gateway 策略 | 外仓 | Gateway 已统一 MEMBER 与员工 DPoP/摘要协议；客服模块 DPoP 换票仍外仓待落地 |

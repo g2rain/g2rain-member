@@ -32,7 +32,7 @@
 - `decrypt`（`POST /auth/wecom/customer_service/decrypt`）阶段无 `external_userid`，不得创建会员；须在 `sync_msg` 之后由 IAM `POST /auth/member/token` 编排。
 - 接口只接受 `organId`、`externalUserId` 和白名单资料，不接收回调密文、拉取令牌或完整消息。
 - 普通 App、客服模块和其他后端不得直接访问该 Member 内部接口。
-- IAM 在 `token` 成功后可签发 `SessionType=MEMBER` 短期 Token（按 `organId + external_userid` 会话复用），供**仅**客服模块经 Gateway 调下游业务；不创建 `passport`，不下发终端用户。
+- IAM 在 `token` 成功后可签发 `SessionType=MEMBER` 短期 Token（按 `organId + external_userid + applicationCode` 会话复用），供**仅**客服模块经 Gateway 调下游业务；不创建 `passport`，不下发终端用户。
 - `member` 与 `member_identity` 必须同事务提交或回滚；并发冲突不能遗留孤立会员。
 - 接口必须保持幂等，并覆盖跨租户、已删除身份、并发和事务回滚测试。
 

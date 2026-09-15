@@ -26,7 +26,7 @@
 - 确认 `externalUserId` 来自 `sync_msg` 的可信响应，且没有被改变大小写。
 - `MEMBER_IDENTITY_DELETED` 表示历史身份仍占位，不能自动新建或转移。
 - 唯一键冲突后应回滚新建事务并回查已有身份。
-- MEMBER Token 仅客服模块使用；按 `organId + external_userid` 会话复用。
+- MEMBER Token 仅客服模块使用；按 `organId + external_userid + applicationCode` 会话复用。
 - 详细边界见[企业微信客户接入会员](../design/wechat-work-customer-member-onboarding.md)。
 
 ## 租户数据异常

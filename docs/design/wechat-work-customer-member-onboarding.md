@@ -49,7 +49,7 @@ IAM 签发或复用 SessionType=MEMBER Token
 
 | 凭证 | 签发方 | 用途 |
 | --- | --- | --- |
-| `memberResolveCode` | IAM（`decrypt` 成功时） | 仅授权后续 `POST /auth/member/token` |
+| `memberResolveCode` | IAM（`decrypt` 成功时） | 短时、可复用；仅授权后续 `POST /auth/member/token`（同回调多消息可重复使用） |
 | `SessionType=MEMBER` Token | IAM（`token` 成功后） | **仅**客服模块经 Gateway 调下游业务 |
 
 ## 4. 模块职责
@@ -108,12 +108,12 @@ IAM 签发或复用 SessionType=MEMBER Token
 5. sync_msg → msgid、external_userid、白名单资料
 6. 按 msgid 幂等
 7. 客服 → IAM POST /auth/member/token
-     （memberResolveCode, externalUserId, profile, msgid）
-8. IAM 在受信服务网络内无鉴权直连 Member resolveOrCreate
+     （memberResolveCode, externalUserId, profile, msgid；Client/Application DPoP）
+8. IAM 先校验 DPoP，再无鉴权直连 Member resolveOrCreate（DPoP 失败不写会员）
 9. IAM 签发/复用 MEMBER Token → 客服持 Token 经 Gateway 做业务
 ```
 
-一次回调可拉多条消息：同一 `memberResolveCode` 可多次调用 `token`；按 `msgid` 幂等；同一 `(organId, external_userid)` 复用未过期 MEMBER Token。
+一次回调可拉多条消息：同一 `memberResolveCode` 可多次调用 `token`；按 `msgid` 幂等；同一 `(organId, external_userid, applicationCode)` 复用未过期 MEMBER Token。
 
 `sync_msg` 游标由客服模块维护，不写入会员表。`access_token` / 拉取令牌不得入库 `member` / `member_identity`，不得写入日志。
 
@@ -173,10 +173,13 @@ IAM 签发或复用 SessionType=MEMBER Token
 | --- | --- |
 | `SessionType` | `MEMBER` |
 | 主体 | JWT claim `memberId`（写入 `BasePrincipal.memberId`；**不得**写入 `userId`）；不创建 `passport` |
-| 租户 | claims 含 code 绑定的 `organId` |
-| 使用方 | **仅**企业微信智能客服模块 |
+| 协议 | 与员工 Token 同一使用协议（scopes、绑钥、Gateway DPoP/摘要）；总方案见 IAM `docs/design/member-token-issuance-alignment.md` |
+| 下游 | 业务只读 `PrincipalContextHolder.getMemberId()`；对象级校验 organ + member；见 `docs/security/security-boundaries.md` |
+| 刷新 | 允许 `refresh_token`（复核 Member 状态后重签）；禁止 `exchange_token` |
+| 租户 | claims 含 code 绑定的 `organId`；须为租户类型 |
+| 使用方 | 持票调用方经 Gateway（无调用方协议特例）；客服客户端 DPoP 实现可分期 |
 | 禁止 | 不下发终端用户；不作员工登录；不可用 code 冒充 |
-| 粒度 | 每个 `organId + external_userid` 会话一个短期 Token；未过期复用 |
+| 粒度 | 每个 `organId + external_userid + applicationCode` 会话一个短期 Token；未过期复用 |
 | 签发时机 | Member resolve 成功且状态允许之后（由 IAM `token` 完成） |
 | 拒绝签发 | 身份已删、会员冻结/删除、跨租户或损坏绑定 |
 
@@ -232,7 +235,7 @@ POST /auth/member/token
   出参：accessToken(SessionType=MEMBER), tokenExpiresAt, member 摘要
 ```
 
-`memberResolveCode`：短 TTL（建议 1–5 分钟），绑定 `organId` / binding；仅授权 `token`；同一 code 可多次换票。
+`memberResolveCode`：短时、可复用票据（建议 TTL 1–5 分钟），绑定 `organId` / binding；仅授权 `token`；同一 code 可多次换票（批消息），**非**单次消费。
 
 ### 12.3 输入校验（Member）
 
