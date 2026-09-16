@@ -4,7 +4,7 @@
 
 - JDK 25
 - Maven 3.9+
-- MySQL 8+
+- MySQL 8.0.13+
 - Redis（使用相关平台 Starter 能力时）
 - Nacos（使用 `nacos` profile 时）
 
@@ -60,4 +60,3 @@ mvn -pl g2rain-member-startup -am spring-boot:run
 - 服务名：`g2rain-member`。
 
 提交前运行 `mvn clean verify`。若修改模块、领域边界、配置、生成流程或长期设计，应同步更新文档或 ADR。
-

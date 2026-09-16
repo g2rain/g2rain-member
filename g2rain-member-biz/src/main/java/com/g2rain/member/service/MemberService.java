@@ -33,6 +33,22 @@ public interface MemberService {
     PageData<MemberVo> selectPage(PageSelectListDto<MemberSelectDto> selectDto);
 
     /**
+     * 读取当前 MEMBER 会话对应的会员资料（身份来自 Principal，不接受请求参数 memberId）。
+     *
+     * @return 当前会员 VO
+     */
+    MemberVo getCurrent();
+
+    /**
+     * 受信内部：按 organId + memberId 复核会员是否允许签发/刷新 MEMBER Token。
+     *
+     * @param organId  可信租户 ID
+     * @param memberId 会员 ID
+     * @return 可签发会员资料
+     */
+    MemberVo requireActiveForToken(Long organId, Long memberId);
+
+    /**
      * 新增或更新数据
      *
      * @param dto 数据传输对象

@@ -9,6 +9,15 @@
 - 类型后缀表达职责：`Api`、`Controller`、`Service`、`Dao`、`Po`、`Dto`、`Request`、`Vo`、`Converter`、`Config`。
 - 测试类使用“被测类型 + `Test`”，测试方法说明条件与预期结果。
 
+DTO 必须同时由“用途”和“所属 Maven 模块”确定边界：
+
+- API 模块 `dto`：可复用的查询或请求契约，例如 `MemberSelectDto`、`WechatWorkMemberResolveRequest`。
+- Biz 模块 `dto`：仅限实现层使用的新增/更新输入，例如 `MemberDto`、`MemberIdentityDto`。
+- 两者当前 Java 包名都是 `com.g2rain.member.dto`，审查时必须检查文件路径，不能只看 import。
+- Biz DTO 不得被 API 接口、其他服务或外部调用方作为编译期契约使用；需要发布时应在 API 模块定义明确契约。
+- API 模块的跨模块契约以查询为主；不为复用方便发布通用保存、更新或删除 DTO。
+- 编辑 Member 数据优先由 App 经 Gateway 调用本服务写用例，或由 Member 消费其他模块的领域消息后自主更新。
+
 ## 2. 模块与包边界
 
 ```text
@@ -25,6 +34,7 @@ g2rain-member-startup → g2rain-member-biz → g2rain-member-api
 - 可复用契约定义在 API 模块，Controller 实现对应接口。
 - Controller 只负责路由、参数绑定、校验和结果包装；事务及业务规则位于 Service。
 - 返回值统一使用 `Result<T>`，分页使用项目公共 `PageData<T>`。
+- 当前 `MemberDto`、`MemberIdentityDto` 是 Biz `/save` 接口的本地写入输入，并通过 Converter 转为 PO；它们不是 `SelectDto`，也不是 API 模块发布的跨服务契约。
 - 路由沿用项目现有 snake_case，例如 `/member_identity` 和 `/resolve_or_create`。
 - 受信内部接口使用 `/internal/...` 并在 OpenAPI 中隐藏；路径与隐藏不能替代真实访问控制。
 
@@ -62,4 +72,3 @@ g2rain-member-startup → g2rain-member-biz → g2rain-member-api
 ```bash
 mvn clean verify
 ```
-

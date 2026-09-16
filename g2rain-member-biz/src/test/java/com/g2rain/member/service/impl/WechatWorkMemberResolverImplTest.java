@@ -49,6 +49,8 @@ class WechatWorkMemberResolverImplTest {
         ReflectionTestUtils.setField(resolver, "memberDao", memberDao);
         ReflectionTestUtils.setField(resolver, "memberIdentityDao", memberIdentityDao);
         ReflectionTestUtils.setField(resolver, "idGenerator", idGenerator);
+        // 单测无 Spring 代理；自引用指向本实例以走 create 入口（冲突回查在 resolveOrCreate）
+        ReflectionTestUtils.setField(resolver, "self", resolver);
     }
 
     @Test

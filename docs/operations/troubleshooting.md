@@ -21,11 +21,13 @@
 
 ## 企业微信会员解析失败
 
-- 确认上游已由 IAM 完成回调验签、解密和可信 `organId` 确认。
+- 确认客服模块已走 IAM `decrypt`（取得 `memberResolveCode`）→ `sync_msg` → IAM `POST /auth/member/token`，而非直连 Member。
+- 确认 IAM 通过服务发现直连 Member，且 `organId` 来自 code 绑定；该调用不经过 Gateway、不使用服务凭证。
 - 确认 `externalUserId` 来自 `sync_msg` 的可信响应，且没有被改变大小写。
 - `MEMBER_IDENTITY_DELETED` 表示历史身份仍占位，不能自动新建或转移。
 - 唯一键冲突后应回滚新建事务并回查已有身份。
-- 详细边界见[企业微信智能客服会员识别](../design/wechat-work-smart-customer-service-member-identification.md)。
+- MEMBER Token 仅客服模块使用；按 `organId + external_userid + applicationCode` 会话复用。
+- 详细边界见[企业微信客户接入会员](../design/wechat-work-customer-member-onboarding.md)。
 
 ## 租户数据异常
 
@@ -36,4 +38,3 @@
 ## 文档验证失败
 
 让 Agent 结合当前源码、POM、`docs/project.yaml` 和 Git Diff 检查缺失文件、失效链接、模块差异与非法依赖。有意调整架构时，应同步更新项目元数据、文档和 ADR，不能只修改 README 摘要。
-
