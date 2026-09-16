@@ -5,6 +5,15 @@ role: 平台会员主数据与外部身份绑定服务
 language: Java
 buildTool: Maven
 
+architectureBaseline:
+  repository: https://github.com/g2rain/g2rain
+  ref: architecture-v1.0.0
+  profile: docs/architecture/profiles/java-domain-service
+  version: 1.0.0
+  status: adopted
+  releasedAt: "2026-08-24"
+  deviations: docs/architecture/deviations.md
+
 ownership:
   owns:
     - 租户内会员主数据、状态与稳定会员编号
@@ -12,8 +21,8 @@ ownership:
     - 企业微信外部联系人会员的解析与幂等创建
     - 会员资料最小化保存、租户隔离和身份历史占位
   excludes:
-    - 员工 Passport、平台登录、OAuth/OIDC 与 Token 签发
-    - 企业微信回调验签、解密和 sync_msg 消息拉取
+    - 员工 Passport、平台登录、OAuth/OIDC 与 Token 签发（MEMBER Token 由 IAM 签发）
+    - 企业微信回调解密（IAM decrypt）、memberResolveCode 与 sync_msg 消息拉取
     - 网关路由、统一入口鉴权和请求转发
     - 咨询、工单、订单和其他会员下游业务
 
@@ -33,10 +42,50 @@ modules:
     mayDependOn:
       - g2rain-member-biz
 
+dtoPolicy:
+  sharedJavaPackage: com.g2rain.member.dto
+  apiModule:
+    path: g2rain-member-api/src/main/java/com/g2rain/member/dto
+    role: 可复用查询、请求及受信内部接口契约
+    types:
+      - MemberSelectDto
+      - MemberIdentitySelectDto
+      - WechatWorkMemberResolveRequest
+      - WechatWorkExternalProfileDto
+  bizModule:
+    path: g2rain-member-biz/src/main/java/com/g2rain/member/dto
+    role: 当前服务本地新增与更新输入及 Biz 内部传输
+    types:
+      - MemberDto
+      - MemberIdentityDto
+  rules:
+    - DTO 架构归属以 Maven 模块源码路径为准，不能只按相同 Java 包名判断
+    - API 模块不得引用物理位于 Biz 模块的 DTO
+    - 其他服务不得依赖 Biz JAR 获取 MemberDto 或 MemberIdentityDto
+    - 需要跨服务复用的写入请求必须在 API 模块定义独立契约
+
+moduleCollaboration:
+  synchronousDefault: query-only
+  queryContracts: g2rain-member-api
+  writePaths:
+    - App 携带 Token 经 Gateway 调用 Member 写接口
+    - Member 监听其他模块发布的领域消息并在自身边界内编辑数据
+  rules:
+    - 不推荐其他后端模块同步调用 Member 的通用保存、更新或删除接口
+    - 数据所有权属于 Member，写入校验、事务、幂等和状态变化必须在 Member 内完成
+    - 跨模块消息只表达已发生的领域事实，不携带绕过 Member 规则的数据库更新指令
+    - 消息消费必须设计幂等、顺序、重试、重复投递、失败恢复和可观测性
+    - 新增跨模块同步写契约属于架构例外，必须通过需求设计和 ADR 说明原因
+  currentState:
+    messageConsumerImplemented: false
+    note: 当前源码尚未实现跨模块消息消费；该策略约束后续协作设计
+
 runtime:
   mainClass: com.g2rain.member.Application
   defaultPort: 8080
   defaultProfile: dev
+  minimumVersions:
+    mysql: "8.0.13"
   dependencies:
     - MySQL
     - Redis
@@ -74,7 +123,7 @@ gitWorkflow:
     - feature/* 和 fix/* 不得绕过 develop 直接合并到 main
     - main 承担正式发布和版本号升级
     - common、starter 等提供 JAR 的项目发布时必须检查并按兼容性升级版本号
-  commitFormat: type(scope): summary
+  commitFormat: "type(scope): summary"
 
 architectureRules:
   - g2rain-member-api 不得依赖 g2rain-member-biz 或 g2rain-member-startup
@@ -83,26 +132,53 @@ architectureRules:
   - API 模块不得引用 controller、service、dao、config 等实现包
   - 前端 App 通过 g2rain-iam 完成认证并取得用于 Gateway 的 Token
   - 前端 App 和普通外部调用方必须通过 Gateway 访问 Member 的公开接口
-  - 企业微信接入模块必须先通过 IAM 验证回调并取得可信租户上下文
-  - 企业微信接入模块只能通过受信内部契约解析或创建会员
-  - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容
-  - 受信内部接口必须显式隐藏并实施访问控制，不得只依赖 URL 前缀隔离
+  - 企业微信智能客服模块位于 Gateway 外，必须先通过 IAM decrypt 取得 memberResolveCode，再经 POST /auth/member/token 换票
+  - 企业微信智能客服模块不得直连 Member；会员解析由 IAM token 编排，并在受信服务网络内通过服务发现无鉴权直连 Member
+  - IAM 可签发 SessionType=MEMBER 短期 Token，仅供客服模块经 Gateway 调下游业务，不创建 passport
+  - Member 不处理企业微信回调密文、签名、拉取令牌或完整消息内容，不签发 Token
+  - IAM 到 Member 的 resolveOrCreate 接受无鉴权直连；Member 信任 IAM 传入的 organId，服务及内部接口不得暴露到非受信网络
   - 所有会员与身份读写必须保持 organ_id 租户一致性
+  - 仅有效记录唯一且删除后允许重建时使用 IF(delete_flag = 0, 0, NULL) 函数唯一索引，不使用普通 UNIQUE (..., delete_flag)
+  - 模块间同步依赖主要用于查询，不推荐跨模块调用通用保存、更新或删除接口
+  - Member 数据编辑优先由 App 经 Gateway 发起，或由 Member 监听领域消息后自主完成
 
 documentation:
   entry: docs/index.md
   architecture: docs/architecture/overview.md
   decisions: docs/decisions
+  agentEntry: AGENTS.md
   required:
     - docs/community.md
+    - docs/requirements/README.md
     - docs/architecture/overview.md
     - docs/architecture/modules.md
     - docs/architecture/dependencies.md
     - docs/architecture/runtime-flows.md
+    - docs/architecture/deviations.md
     - docs/development/local-development.md
     - docs/development/code-conventions.md
+    - docs/development/api-conventions.md
+    - docs/development/database-conventions.md
+    - docs/development/testing.md
+    - docs/development/reference-implementation.md
+    - docs/development/dependency-policy.md
+    - docs/development/definition-of-done.md
     - docs/development/git-workflow.md
     - docs/development/code-generation.md
+    - docs/security/security-boundaries.md
     - docs/operations/configuration.md
     - docs/operations/deployment.md
+    - docs/operations/observability.md
     - docs/operations/troubleshooting.md
+
+aiCoding:
+  instructionEntry: AGENTS.md
+  requirementTemplate: docs/requirements/README.md
+  testingPolicy: docs/development/testing.md
+  definitionOfDone: docs/development/definition-of-done.md
+  validation:
+    - 读取需求、架构、代码规范和相关专题文档
+    - 检查当前源码、POM、配置和 Git Diff
+    - 补充必要测试并执行 mvn clean verify
+    - 动态检查文档链接与项目元数据一致性
+    - 报告未验证事项和剩余风险

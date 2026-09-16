@@ -31,7 +31,10 @@ public enum MemberErrorCode implements ErrorCode {
     MEMBER_NOT_FOUND("member.40007", "会员不存在或已删除"),
 
     @Schema(description = "并发创建后仍无法回查身份")
-    MEMBER_IDENTITY_CREATE_CONFLICT("member.40008", "会员身份创建冲突，请稍后重试");
+    MEMBER_IDENTITY_CREATE_CONFLICT("member.40008", "会员身份创建冲突，请稍后重试"),
+
+    @Schema(description = "会员会话无权访问该资源")
+    MEMBER_ACCESS_DENIED("member.40301", "无权访问该会员资源");
 
     private final String code;
 

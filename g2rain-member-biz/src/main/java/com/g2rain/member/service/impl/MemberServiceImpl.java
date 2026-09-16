@@ -1,5 +1,6 @@
 package com.g2rain.member.service.impl;
 
+import com.g2rain.common.exception.BusinessException;
 import com.g2rain.common.exception.SystemErrorCode;
 import com.g2rain.common.id.IdGenerator;
 import com.g2rain.common.model.PageData;
@@ -12,7 +13,10 @@ import com.g2rain.member.dao.MemberDao;
 import com.g2rain.member.dao.po.MemberPo;
 import com.g2rain.member.dto.MemberDto;
 import com.g2rain.member.dto.MemberSelectDto;
+import com.g2rain.member.enums.MemberErrorCode;
+import com.g2rain.member.enums.MemberStatus;
 import com.g2rain.member.service.MemberService;
+import com.g2rain.member.support.MemberPrincipalSupport;
 import com.g2rain.member.vo.MemberVo;
 import com.g2rain.mybatis.pagination.PageContext;
 import com.g2rain.mybatis.pagination.model.Page;
@@ -47,6 +51,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public List<MemberVo> selectList(MemberSelectDto selectDto) {
+        MemberPrincipalSupport.constrainMemberSelect(selectDto);
         return memberDao.selectList(selectDto)
                 .stream()
                 .map(MemberConverter.INSTANCE::po2vo)
@@ -55,6 +60,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public PageData<MemberVo> selectPage(PageSelectListDto<MemberSelectDto> selectDto) {
+        Asserts.isTrue(Objects.nonNull(selectDto) && Objects.nonNull(selectDto.getQuery()),
+            SystemErrorCode.PARAM_REQUIRED, "query");
+        MemberPrincipalSupport.constrainMemberSelect(selectDto.getQuery());
         Page<MemberPo> page = PageContext.of(selectDto.getPageNum(), selectDto.getPageSize(), () -> {
             memberDao.selectList(selectDto.getQuery());
         });
@@ -66,16 +74,44 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberVo getCurrent() {
+        Long memberId = MemberPrincipalSupport.requireMemberId();
+        MemberPo existing = memberDao.selectById(memberId);
+        Asserts.isTrue(Objects.nonNull(existing), MemberErrorCode.MEMBER_NOT_FOUND, memberId);
+        MemberPrincipalSupport.assertOwnsMemberResource(existing.getOrganId(), existing.getId());
+        return MemberConverter.INSTANCE.po2vo(existing);
+    }
+
+    @Override
+    public MemberVo requireActiveForToken(Long organId, Long memberId) {
+        Asserts.isTrue(organId != null && organId > 0L, MemberErrorCode.MEMBER_ORGAN_INVALID);
+        Asserts.isTrue(memberId != null && memberId > 0L, SystemErrorCode.PARAM_VAL_INVALID, memberId);
+
+        MemberPo member = memberDao.selectByIdIncludingDeletedWithoutIsolation(memberId);
+        if (member == null || Boolean.TRUE.equals(member.getDeleteFlag())) {
+            throw new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND);
+        }
+        if (!Objects.equals(member.getOrganId(), organId)) {
+            throw new BusinessException(MemberErrorCode.MEMBER_IDENTITY_ORGAN_MISMATCH);
+        }
+        if (!MemberStatus.NORMAL.name().equals(member.getStatus())) {
+            throw new BusinessException(MemberErrorCode.MEMBER_FROZEN);
+        }
+
+        return MemberConverter.INSTANCE.po2vo(member);
+    }
+
+    @Override
     public Long save(MemberDto dto) {
+        if (MemberPrincipalSupport.isMemberSession()) {
+            return saveAsMember(dto);
+        }
+
         Validations.validateSave(dto);
 
-        // 转换DTO为PO
         MemberPo entity = MemberConverter.INSTANCE.dto2po(dto);
-
-        // 判断是新增还是更新
         Long id = entity.getId();
         if (Objects.isNull(id) || id == 0) {
-            // 新增：使用IdGenerator生成主键
             entity.setId(idGenerator.generateId());
             LocalDateTime now = Moments.now();
             entity.setUpdateTime(now);
@@ -85,7 +121,6 @@ public class MemberServiceImpl implements MemberService {
         } else {
             MemberPo existing = memberDao.selectById(id);
             Asserts.isTrue(Objects.nonNull(existing), SystemErrorCode.DATA_NOT_EXISTS, id);
-            // 更新：直接更新
             entity.setUpdateTime(Moments.now());
             int success = memberDao.update(entity);
             Asserts.greaterThan(success, 0, SystemErrorCode.UPDATE_DATA_ERROR, id);
@@ -94,8 +129,42 @@ public class MemberServiceImpl implements MemberService {
         return entity.getId();
     }
 
+    /**
+     * MEMBER 会话仅允许更新自己的资料；禁止新增/伪造 organId。
+     */
+    private Long saveAsMember(MemberDto dto) {
+        Long principalMemberId = MemberPrincipalSupport.requireMemberId();
+        Long id = dto == null ? null : dto.getId();
+        if (Objects.isNull(id) || id == 0) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCESS_DENIED);
+        }
+        if (!Objects.equals(id, principalMemberId)) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCESS_DENIED);
+        }
+
+        Validations.validateSave(dto);
+        Long principalOrganId = MemberPrincipalSupport.bindOrRejectDtoOrganId(dto.getOrganId());
+
+        MemberPo existing = memberDao.selectById(id);
+        Asserts.isTrue(Objects.nonNull(existing), MemberErrorCode.MEMBER_NOT_FOUND, id);
+        MemberPrincipalSupport.assertOwnsMemberResource(existing.getOrganId(), existing.getId());
+
+        MemberPo entity = MemberConverter.INSTANCE.dto2po(dto);
+        entity.setId(principalMemberId);
+        entity.setOrganId(principalOrganId);
+        entity.setMemberNo(existing.getMemberNo());
+        entity.setStatus(existing.getStatus());
+        entity.setUpdateTime(Moments.now());
+        int success = memberDao.update(entity);
+        Asserts.greaterThan(success, 0, SystemErrorCode.UPDATE_DATA_ERROR, id);
+        return principalMemberId;
+    }
+
     @Override
     public int delete(Long id) {
+        if (MemberPrincipalSupport.isMemberSession()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCESS_DENIED);
+        }
         MemberPo existing = memberDao.selectById(id);
         Asserts.isTrue(Objects.nonNull(existing), SystemErrorCode.DATA_NOT_EXISTS, id);
         return memberDao.delete(id);
