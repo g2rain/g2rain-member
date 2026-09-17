@@ -10,18 +10,22 @@ mvn clean verify
 
 ## 构建镜像
 
-Startup 模块配置了 Jib。先构建依赖模块，再构建到本地 Docker：
+推荐使用仓库根目录脚本（与 department 一致）：先全量 `install`，再对 startup 执行 Jib：
+
+```bash
+./build.sh <tag>
+```
+
+不传 tag 时默认为 `latest`，产物为 `g2rain/g2rain-member:<tag>`。
+
+也可手动调用 Maven：
 
 ```bash
 mvn -pl g2rain-member-startup -am package
 mvn -pl g2rain-member-startup jib:dockerBuild
 ```
 
-目标镜像默认为：
-
-```text
-g2rain/g2rain-member:<project.version>
-```
+手动路径下 POM 默认镜像为 `g2rain/g2rain-member:<project.version>`。
 
 基础镜像为 `eclipse-temurin:25-jre`，主类为 `com.g2rain.member.Application`，容器端口为 `8080`。
 

@@ -105,6 +105,14 @@ mysql -u root -p < scripts/g2rain-member.sql
 mvn clean verify
 ```
 
+### 构建镜像
+
+```bash
+./build.sh <tag>
+```
+
+不传 tag 时默认为 `latest`，镜像为 `g2rain/g2rain-member:<tag>`。详情见 [docs/operations/deployment.md](docs/operations/deployment.md)。
+
 ### 启动服务
 
 ```bash
