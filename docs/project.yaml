@@ -96,7 +96,7 @@ commands:
   run: mvn -pl g2rain-member-startup -am spring-boot:run
   codegen: mvn g2rain-crafter:bootstrap
   codegenInteractive: mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
-  image: mvn -pl g2rain-member-startup -am package && mvn -pl g2rain-member-startup jib:dockerBuild
+  image: ./build.sh <tag>
 
 community:
   website: https://www.g2rain.com
