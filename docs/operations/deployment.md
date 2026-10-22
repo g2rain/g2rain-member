@@ -27,7 +27,7 @@ mvn -pl g2rain-member-startup jib:dockerBuild
 
 手动路径下 POM 默认镜像为 `g2rain/g2rain-member:<project.version>`。
 
-基础镜像为 `eclipse-temurin:25-jre`，主类为 `com.g2rain.member.Application`，容器端口为 `8080`。
+基础镜像为 `eclipse-temurin:25.0.4.1_1-jre`，主类为 `com.g2rain.member.Application`，容器端口为 `8080`。
 
 ## 部署前检查
 
