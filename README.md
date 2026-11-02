@@ -4,12 +4,13 @@
 
 # g2rain-member
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/g2rain/g2rain-member/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-25-437291?logo=openjdk&logoColor=white)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.2-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2025.1.4-586069?logo=spring&logoColor=white)](https://spring.io/projects/spring-cloud)
 [![Maven](https://img.shields.io/badge/build-Maven-C71A36?logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-g2rain 平台会员主数据与外部身份绑定服务，维护租户内会员、稳定会员编号、会员状态及企业微信等身份关系，并为可信接入渠道提供会员解析与幂等创建能力。
+G2rain（谷雨）是面向企业的开源智能体平台，连接模型、知识与业务工具，以 SaaS 基座和应用开发工具链支撑智能应用落地。现有 SaaS 基座和知识库已可用，智能体平台与智能客服已开发完成并开源；交易、订阅、计量计费等商业化能力仍处于规划设计中。`g2rain-member` 是其中的会员主数据与外部身份绑定服务，维护租户内会员、稳定会员编号、会员状态及企业微信等身份关系，并为可信接入渠道提供会员解析与幂等创建能力；它不代表或替代整个平台能力。具体组件、版本与接入方式以 [g2rain 中央仓库](https://github.com/g2rain/g2rain) 和各责任仓库说明为准。
 
 [官网](https://www.g2rain.com) · [完整文档](docs/index.md) · [中央架构 Profile](https://github.com/g2rain/g2rain/tree/architecture-v1.0.0/docs/architecture/profiles/java-domain-service) · [架构说明](docs/architecture/overview.md) · [代码规范](docs/development/code-conventions.md) · [Git 工作流](docs/development/git-workflow.md) · [Issues](https://github.com/g2rain/g2rain/issues) · [Discussions](https://github.com/g2rain/g2rain/discussions)
 
@@ -74,7 +75,7 @@ API 与 Biz 模块当前都包含 `com.g2rain.member.dto` 包，但职责不同�
 
 | 类别 | 技术 |
 | --- | --- |
-| 运行时 | Java 25、Spring Boot 4.0.5、Spring Cloud 2025.1.1 |
+| 运行时 | Java 25、Spring Boot 4.1.2、Spring Cloud 2025.1.4 |
 | 数据访问 | MyBatis、MySQL、MapStruct |
 | 平台基础设施 | Redis、Nacos、平台数据隔离与安全 Starter |
 | API 与文档 | Spring Web、Jakarta Validation、OpenAPI |
@@ -108,10 +109,10 @@ mvn clean verify
 ### 构建镜像
 
 ```bash
-./build.sh <tag>
+./build.sh 1.0.0
 ```
 
-不传 tag 时默认为 `latest`，镜像为 `g2rain/g2rain-member:<tag>`。详情见 [docs/operations/deployment.md](docs/operations/deployment.md)。
+本地构建会写入 Docker daemon，默认镜像为 `ghcr.io/g2rain/g2rain-member:1.0.0`；不使用 `latest`。详情见 [docs/operations/deployment.md](docs/operations/deployment.md)。
 
 ### 启动服务
 
@@ -125,6 +126,15 @@ mvn -pl g2rain-member-startup -am spring-boot:run
 GET /actuator/health
 ```
 
+## GHCR 镜像发布
+
+- 镜像地址：`ghcr.io/g2rain/g2rain-member`
+- 标签：稳定版为 `<version>`（例如 `1.0.0`），提交追溯标签为 `sha-<完整提交 SHA>`；不发布或更新 `latest`。
+- 拉取示例：`docker pull ghcr.io/g2rain/g2rain-member:1.0.0`（包公开后可匿名拉取）。
+- 触发条件：仅当已进入 `main` 的稳定版 `vMAJOR.MINOR.PATCH` tag 被推送时；工作流还会验证 tag 提交上的同版本发布说明、Maven 版本并运行 `mvn clean verify`。
+
+完整的镜像内容、生产密钥注入、GHCR 权限、首次公开设置及部署边界见[部署说明](docs/operations/deployment.md)和[v1.0.0 发布说明](docs/releases/v1.0.0.md)。本仓库只提供会员领域服务，不代表 G2rain 平台的全部能力；平台当前能力与状态以 [g2rain 中央仓库](https://github.com/g2rain/g2rain) 为准。
+
 ## CRUD 代码生成
 
 配置文件模式：
@@ -136,7 +146,7 @@ mvn g2rain-crafter:bootstrap
 完整坐标及交互式模式：
 
 ```bash
-mvn com.g2rain:g2rain-crafter:1.0.7:bootstrap -Dphase=foundry
+mvn com.g2rain:g2rain-crafter:1.0.9:bootstrap -Dphase=foundry
 ```
 
 缺少参数时的典型交互：
@@ -224,7 +234,7 @@ mvn clean verify
 
 ## 许可证
 
-本项目基于 [Apache 2.0 许可证](https://github.com/g2rain/g2rain-member/blob/main/LICENSE) 开源。
+本项目基于 [Apache 2.0 许可证](LICENSE) 开源。
 
 ## 联系我们
 

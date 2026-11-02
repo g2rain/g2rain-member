@@ -8,15 +8,15 @@ mvn clean verify
 
 可执行 Spring Boot 产物由 `g2rain-member-startup` 模块生成。
 
-## 构建镜像
+## 构建、镜像与 GHCR 发布
 
-推荐使用仓库根目录脚本（与 department 一致）：先全量 `install`，再对 startup 执行 Jib：
+本地 Maven 构建与测试使用 `mvn clean verify`；它不会构建容器或推送镜像。根目录脚本先完整 Maven 构建与测试，再使用与 CI 相同的 Startup Jib 配置把镜像写入本机 Docker daemon：
 
 ```bash
-./build.sh <tag>
+./build.sh 1.0.0
 ```
 
-不传 tag 时默认为 `latest`，产物为 `g2rain/g2rain-member:<tag>`。
+默认标签是 Maven 项目版本；标签必须与项目版本一致，且不使用 `latest`。本地产物为 `ghcr.io/g2rain/g2rain-member:1.0.0`，不会推送 GHCR。
 
 也可手动调用 Maven：
 
@@ -25,9 +25,24 @@ mvn -pl g2rain-member-startup -am package
 mvn -pl g2rain-member-startup jib:dockerBuild
 ```
 
-手动路径下 POM 默认镜像为 `g2rain/g2rain-member:<project.version>`。
+手动路径下 POM 默认镜像为 `ghcr.io/g2rain/g2rain-member:<project.version>`。
 
-基础镜像为 `eclipse-temurin:25.0.4.1_1-jre`，主类为 `com.g2rain.member.Application`，容器端口为 `8080`。
+基础镜像为 `eclipse-temurin:25.0.4.1_1-jre`，主类为 `com.g2rain.member.Application`，容器端口为 `8080`。OCI 元数据包括 source、Apache-2.0 license、title、version 和 description。
+
+GitHub Actions 仅在推送稳定版 `vMAJOR.MINOR.PATCH` Git tag 时运行；普通分支、Pull Request 和手动触发都不会发布。工作流会验证 tag 已进入 `origin/main`、同版本发布说明存在且非空、tag 与 Maven `project.version` 一致，再运行完整 `mvn clean verify`，使用 `GITHUB_TOKEN` 登录 GHCR 并推送：
+
+- `ghcr.io/g2rain/g2rain-member:<version>`
+- `ghcr.io/g2rain/g2rain-member:sha-<完整提交 SHA>`
+
+不创建 GitHub Release、不部署服务，也不更新 `latest`。CI 和本地容器构建复用同一 Jib 的基础镜像、入口、端口、构建产物和 OCI 元数据；CI 的容器步骤会额外推送到 GHCR。匿名拉取仅在包设为公开后可用：
+
+```bash
+docker pull ghcr.io/g2rain/g2rain-member:1.0.0
+```
+
+首次成功推送后，在 GitHub Packages 的 **Package settings → Change visibility → Public** 将包设为公开；若组织策略禁止修改，请联系组织管理员。若已有同名 GHCR 包推送被拒绝，还须在 **Package settings → Actions access** 授予 `g2rain-member` 写权限，并检查组织 Packages 策略；`packages: write` 本身不能绕过这些设置。
+
+镜像包含 Jib 从 Startup 构建产物组装的依赖、resources 与应用 classes，不是仓库工作区的逐文件 Docker COPY；仓库没有 Dockerfile 或 `.dockerignore`。已跟踪的 `g2rain-member-startup/src/main/resources/application-dev.yml` 会被打入可执行 Jar，进而进入镜像，包含开发数据库用户名和密码。投产必须通过环境变量、Secret 或 Nacos 注入并覆盖凭据，并评估及轮换任何已暴露的默认值；本次未删除文件或改写历史。
 
 ## 部署前检查
 
