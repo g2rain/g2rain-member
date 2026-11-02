@@ -41,6 +41,7 @@
 
 - [配置说明](operations/configuration.md)
 - [构建与部署](operations/deployment.md)
+- [v1.0.0 发布说明](releases/v1.0.0.md)
 - [可观测性规范](operations/observability.md)
 - [故障排查](operations/troubleshooting.md)
 

@@ -48,7 +48,7 @@
 - 提供 `com.g2rain.member.Application` 启动类。
 - 引入 Biz 并组装 Spring Web、Actuator 和 OpenAPI。
 - 提供端口、profile、数据源、Nacos、MyBatis 与观测配置。
-- 通过 Jib 构建 `g2rain/g2rain-member` 镜像。
+- 通过 Jib 构建 `ghcr.io/g2rain/g2rain-member` 镜像。
 
 该模块不承载会员业务规则，也不新增供下层模块反向依赖的领域类型。
 
