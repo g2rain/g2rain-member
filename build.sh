@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 APP_IMAGE="${APP_IMAGE:-ghcr.io/g2rain/g2rain-member}"
 
 # 第一个参数可选；默认使用 Maven 项目版本。第二个参数为 push 时推送到镜像仓库，其他情况载入本机 Docker。
-PROJECT_VERSION="$(mvn --batch-mode --no-transfer-progress -q -DforceStdout help:evaluate -Dexpression=project.version | tail -n 1)"
+PROJECT_VERSION="$(mvn --batch-mode --no-transfer-progress -q -DforceStdout help:evaluate -Dexpression=project.version)"
 TAG="${1:-$PROJECT_VERSION}"
 MODE="${2:-local}"
 

@@ -131,9 +131,11 @@ GET /actuator/health
 - 镜像地址：`ghcr.io/g2rain/g2rain-member`
 - 标签：稳定版为 `<version>`（例如 `1.0.0`），提交追溯标签为 `sha-<完整提交 SHA>`；不发布或更新 `latest`。
 - 拉取示例：`docker pull ghcr.io/g2rain/g2rain-member:1.0.0`（包公开后可匿名拉取）。
-- 触发条件：仅当已进入 `main` 的稳定版 `vMAJOR.MINOR.PATCH` tag 被推送时；工作流还会验证 tag 提交上的同版本发布说明、Maven 版本并运行 `mvn clean verify`。
+- 触发条件：仅当已进入 `main` 的稳定版 `vMAJOR.MINOR.PATCH` tag 被推送时；工作流还会验证 tag 提交上的同版本发布说明、Maven 版本并运行 `mvn -U clean install`。
 
 完整的镜像内容、生产密钥注入、GHCR 权限、首次公开设置及部署边界见[部署说明](docs/operations/deployment.md)和[v1.0.0 发布说明](docs/releases/v1.0.0.md)。本仓库只提供会员领域服务，不代表 G2rain 平台的全部能力；平台当前能力与状态以 [g2rain 中央仓库](https://github.com/g2rain/g2rain) 为准。
+
+镜像成功发布后，工作流会发布 `com.g2rain:g2rain-member-api:1.0.0` 与所需父 POM `com.g2rain:g2rain-member:1.0.0` 到 `https://maven.pkg.github.com/g2rain/g2rain-member`。API 工作流也可手动运行；消费方的仓库与认证配置见[部署说明](docs/operations/deployment.md)。
 
 ## CRUD 代码生成
 
