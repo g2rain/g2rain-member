@@ -1,22 +1,44 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 # 切到脚本所在目录（确保在 g2rain-member 根目录执行）
 cd "$(dirname "$0")"
 
-APP_IMAGE="g2rain/g2rain-member"
+APP_IMAGE="${APP_IMAGE:-ghcr.io/g2rain/g2rain-member}"
 
-# 第一个参数可选：指定 tag；不传时默认 latest
-TAG="${1:-latest}"
+# 第一个参数可选；默认使用 Maven 项目版本。第二个参数为 push 时推送到镜像仓库，其他情况载入本机 Docker。
+PROJECT_VERSION="$(mvn --batch-mode --no-transfer-progress -q -DforceStdout help:evaluate -Dexpression=project.version)"
+TAG="${1:-$PROJECT_VERSION}"
+MODE="${2:-local}"
+
+if [[ "$TAG" != "$PROJECT_VERSION" ]]; then
+  echo "Image tag '$TAG' must equal Maven project version '$PROJECT_VERSION'." >&2
+  exit 1
+fi
+
+case "$MODE" in
+  local) JIB_GOAL="jib:dockerBuild" ;;
+  push) JIB_GOAL="jib:build" ;;
+  *)
+    echo "Usage: $0 [version] [local|push]" >&2
+    exit 1
+    ;;
+esac
+
+JIB_TAG_ARGS=()
+if [[ -n "${EXTRA_TAGS:-}" ]]; then
+  JIB_TAG_ARGS+=("-Djib.to.tags=${EXTRA_TAGS}")
+fi
 
 echo "Building Docker image: ${APP_IMAGE}:${TAG}"
 
 # 先在根目录编译并安装整个项目（包括所有子模块）
-mvn -DskipTests=true clean install
+mvn --batch-mode --no-transfer-progress clean install
 
 # 然后进入 startup 子模块，执行 Jib 构建
 cd g2rain-member-startup
 
-mvn -DskipTests=true \
-  compile jib:dockerBuild \
-  -Djib.to.image=${APP_IMAGE}:${TAG}
+mvn --batch-mode --no-transfer-progress -DskipTests=true \
+  compile "$JIB_GOAL" \
+  "-Djib.to.image=${APP_IMAGE}:${TAG}" \
+  "${JIB_TAG_ARGS[@]}"

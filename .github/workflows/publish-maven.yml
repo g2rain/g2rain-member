@@ -1,0 +1,52 @@
+name: Publish API to GitHub Maven Packages
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: g2rain-member-maven-api-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v7.0.1
+      - name: Check out selected commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # actions/setup-java v6.0.1
+      - name: Set up Temurin JDK 25 and Maven publishing
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          server-id: github
+
+      - name: Require selected commit in release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          selected_commit="$(git rev-parse HEAD^{commit})"
+          if ! git merge-base --is-ancestor "$selected_commit" origin/main; then
+            echo "Selected commit $selected_commit is not in origin/main history." >&2
+            exit 1
+          fi
+
+      - name: Build, test, and publish parent POM and API
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          mvn --batch-mode --no-transfer-progress
+          -pl g2rain-member-api -am clean deploy
+          -DaltDeploymentRepository=github::https://maven.pkg.github.com/g2rain/g2rain-member
